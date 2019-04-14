@@ -1,0 +1,36 @@
+{
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.5",
+    "bootstrap": "3.3.7",
+    "react": "^16.7.0",
+    "prop-types": "^15.7.2",
+    "react-dom": "^16.7.0",
+    "react-bootstrap": "0.31.5",
+    "react-scripts": "^2.1.8"
+  },
+  "peerDependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-bootstrap": "0.31.5"
+  },
+  "dependencies": {
+  },
+  "scripts": {
+    "start": "react-scripts start"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
