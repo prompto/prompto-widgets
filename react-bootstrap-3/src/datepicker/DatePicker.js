@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Button, FormControl, InputGroup, Overlay, Popover } from 'react-bootstrap';
-import LocalDate from './LocalDate';
+import LocalDate from '../intrinsic/LocalDate';
 
 let instanceCount = 0;
 

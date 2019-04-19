@@ -1,5 +1,7 @@
 var path = require('path');
 
+process.env.NODE_ENV = 'production';
+
 module.exports = {
     entry: './react-bootstrap-3-widgets.js',
     module: {
@@ -12,7 +14,7 @@ module.exports = {
         ]
     },
     output: {
-        filename: 'react-bootstrap-3-widgets.js',
+        filename: '../../../prompto-platform/Server/src/main/resources/js/widgets/react-bootstrap-3-widgets.js',
         libraryTarget: 'umd'
     },
     node: {
@@ -29,6 +31,11 @@ module.exports = {
         'react-dom': 'ReactDOM',
         'react-bootstrap': 'ReactBootstrap',
         'prop-types': 'PropTypes',
-        'LocalDate': 'LocalDate'
+        LocalDate: 'LocalDate',
+        List: 'List',
+        StrictSet: 'StrictSet',
+        NativeError: 'NativeError',
+        Utils: 'Utils'
+
     }
 };
