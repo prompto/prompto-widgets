@@ -15,7 +15,8 @@
     "react": "^16.7.0",
     "react-bootstrap": "0.31.5",
     "react-dom": "^16.7.0",
-    "react-scripts": "^2.1.8"
+    "react-scripts": "^2.1.8",
+    "webpack-cli": "^3.3.5"
   },
   "peerDependencies": {
     "react": "^16.7.0",
