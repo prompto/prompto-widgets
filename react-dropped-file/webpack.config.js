@@ -31,7 +31,6 @@ module.exports = {
         'react': 'React',
         'react-dom': 'ReactDOM',
         'react-bootstrap': 'ReactBootstrap'
-        FileRef: 'FileRef'
 
     }
 };
