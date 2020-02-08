@@ -36,7 +36,7 @@ class Preview extends React.Component {
     }
 
     render() {
-        const preview = this.props.preview || ( this.props.source && this.props.source.url ) ;
+        const preview = this.props.preview || ( this.props.current && this.props.current.url ) ;
         const state = preview ? "PREVIEW" : this.props.dragging ? "ACTIVE" : "READY";
         const style = { ...this.props.style, backgroundColor: this.props.dragging ? "Highlight" : "white" };
         return  <div style={style}>
@@ -95,7 +95,7 @@ export default class DroppedFileWidget extends React.Component {
             {({getRootProps, getInputProps}) =>
                 <div {...getRootProps({className: 'dropzone'})}>
                     <Preview {...getInputProps({preview: this.state.preview,
-                                                source: this.props.image,
+                                                current: this.props.preview,
                                                 dragging: this.state.dragging,
                                                 style: this.props.style,
                                                 dragLabel: this.props.dragLabel,
