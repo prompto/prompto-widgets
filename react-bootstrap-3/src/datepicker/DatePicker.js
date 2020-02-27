@@ -633,7 +633,7 @@ export default class DatePicker extends React.Component {
 }
 
 
-DatePicker.propTypes = {
+var propTypes = {
     defaultValue: PropTypes.object,
         value: PropTypes.object,
         required: PropTypes.bool,
@@ -652,11 +652,6 @@ DatePicker.propTypes = {
         onFocus: PropTypes.func,
         autoFocus: PropTypes.bool,
         disabled: PropTypes.bool,
-        weekStartsOnMonday: (props, propName, componentName) => {
-        if (props[propName]) {
-            return new Error(`Prop '${propName}' supplied to '${componentName}' is obsolete. Use 'weekStartsOn' instead.`);
-        }
-    },
         weekStartsOn: PropTypes.number,
         clearButtonElement: PropTypes.oneOfType([
         PropTypes.string,
@@ -696,6 +691,7 @@ DatePicker.propTypes = {
         noValidate: PropTypes.bool
 };
 
+DatePicker.propTypes = propTypes;
 
 DatePicker.defaultProps = {
     cellPadding: '5px',
