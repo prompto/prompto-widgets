@@ -44,7 +44,7 @@ class Preview extends React.Component {
             { state==="PREVIEW" && <img src={preview} style={{ maxWidth: "98%", maxHeight: "98%", width: "auto", height: "auto" }} alt={""}/> }
             { state==="ACTIVE" && ( this.props.dragLabel || 'Release to drop') }
             { state==="READY" && ( this.props.readyLabel || 'Drag file here' ) }
-            <input type="file" ref={ref=>this.input=ref} onChange={this.props.onChange} hidden/>
+            <input type="file" ref={ref=>this.input=ref} onChange={this.props.onChange} style={{display: "none"}}/>
         </div>;
     }
 }
