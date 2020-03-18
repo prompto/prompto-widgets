@@ -21,7 +21,7 @@ export default class DroppedFilePage extends React.Component {
     }
 
     render() {
-        return <DroppedFileWidget image={this.state.image} onDrop={this.onDrop.bind(this)} style={style} dragLabel={"Yep!"}></DroppedFileWidget>;
+        return <DroppedFileWidget image={this.state.image} onDrop={this.onDrop.bind(this)} style={style} readyLabel={"Yup!"} dragLabel={"Yep!"}></DroppedFileWidget>;
     }
 
     onDrop(file) {

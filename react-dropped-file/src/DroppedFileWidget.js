@@ -29,10 +29,11 @@ class Preview extends React.Component {
     constructor(props) {
         super(props);
         this.files = []; // needed by dropzone
+        this.input = null;
     }
 
     click() {
-        // TODO open file dialog
+        this.input.click();
     }
 
     render() {
@@ -43,6 +44,7 @@ class Preview extends React.Component {
             { state==="PREVIEW" && <img src={preview} style={{ maxWidth: "98%", maxHeight: "98%", width: "auto", height: "auto" }} alt={""}/> }
             { state==="ACTIVE" && ( this.props.dragLabel || 'Release to drop') }
             { state==="READY" && ( this.props.readyLabel || 'Drag file here' ) }
+            <input type="file" ref={ref=>this.input=ref} onChange={this.props.onChange} hidden/>
         </div>;
     }
 }
@@ -72,8 +74,12 @@ export default class DroppedFileWidget extends React.Component {
     }
 
     onDragEnter(event) {
-        const hasImage = this.hasImage(event);
-        this.setState({dragging: hasImage});
+        const allowed = this.props.acceptAll ? this.hasFile(event) : this.hasImage(event);
+        this.setState({dragging: allowed});
+    }
+
+    hasFile(event) {
+        return event.dataTransfer.items.length > 0;
     }
 
     hasImage(event) {
@@ -91,7 +97,7 @@ export default class DroppedFileWidget extends React.Component {
     }
 
    render() {
-        return <Dropzone accept={"image/*"} onDrop={this.onDrop.bind(this)} onDragEnter={this.onDragEnter.bind(this)} onDragLeave={this.onDragLeave.bind(this)}>
+        return <Dropzone onDrop={this.onDrop.bind(this)} onDragEnter={this.onDragEnter.bind(this)} onDragLeave={this.onDragLeave.bind(this)}>
             {({getRootProps, getInputProps}) =>
                 <div {...getRootProps({className: 'dropzone'})}>
                     <Preview {...getInputProps({preview: this.state.preview,
