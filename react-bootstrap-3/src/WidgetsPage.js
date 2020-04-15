@@ -21,7 +21,10 @@ export default class WidgetsPage extends React.Component {
     }
 
     handleSelectChange(selected) {
-        this.setState({selected: selected[0]});
+        this.setState({selected: selected[0]}, ()=>{
+            const typeahead = this.refs.typeahead;
+            typeahead && typeahead.getInstance().clear();
+        });
     }
 
     handeContextMenu(e) {
@@ -38,7 +41,7 @@ export default class WidgetsPage extends React.Component {
                     <HelpBlock>Help</HelpBlock>
                     <FormGroup>
                         <ControlLabel>Employee</ControlLabel>
-                        <PromptoTypeahead id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
+                        <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
                         <HelpBlock>Help</HelpBlock>
                     </FormGroup>
                 </FormGroup>
