@@ -54,11 +54,16 @@ export default class DroppedFileWidget extends React.Component {
     constructor(props) {
         super(props);
         this.state = { file: null, preview: null, dragging: false };
+        this.clear = this.clear.bind(this);
     }
 
     componentWillUnmount() {
         if(this.state.preview)
             URL.revokeObjectURL(this.state.preview);
+    }
+
+    clear() {
+        this.setState({ file: null, preview: null, dragging: false });
     }
 
     onDrop(files) {
