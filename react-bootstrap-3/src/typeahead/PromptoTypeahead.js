@@ -1,6 +1,5 @@
 import React from 'react';
 import { Typeahead } from "react-bootstrap-typeahead";
-import List from "../intrinsic/List";
 
 export default React.forwardRef((props, ref)=>{
     const adjustedProps = { ...props };
@@ -13,7 +12,7 @@ export default React.forwardRef((props, ref)=>{
         adjustedProps.options = props.options.toList();
     }
     if(props.onChange) {
-        adjustedProps.onChange = items => props.onChange(new List(false, items));
+        adjustedProps.onChange = items => props.onChange(new window.List(false, items));
     }
     return <Typeahead ref={ref} {...adjustedProps}/>;
 

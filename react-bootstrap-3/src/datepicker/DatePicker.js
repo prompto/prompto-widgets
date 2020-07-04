@@ -4,7 +4,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { Button, FormControl, InputGroup, Overlay, Popover } from 'react-bootstrap';
-import LocalDate from '../intrinsic/LocalDate';
 
 let instanceCount = 0;
 
@@ -376,7 +375,7 @@ export default class DatePicker extends React.Component {
   }
 
   getValue() {
-    return this.state.selectedDate ? new LocalDate(this.state.selectedDate) : null;
+    return this.state.selectedDate ? new window.LocalDate(this.state.selectedDate) : null;
   }
 
   getFormattedValue() {
@@ -496,7 +495,7 @@ export default class DatePicker extends React.Component {
       });
 
       if (this.props.onChange) {
-        this.props.onChange(new LocalDate(selectedDate), inputValue);
+        this.props.onChange(new window.LocalDate(selectedDate), inputValue);
       }
     }
 
@@ -529,7 +528,7 @@ export default class DatePicker extends React.Component {
     }
 
     if (this.props.onChange) {
-      this.props.onChange(new LocalDate(newSelectedDate), inputValue);
+      this.props.onChange(new window.LocalDate(newSelectedDate), inputValue);
     }
   }
 

@@ -2,8 +2,12 @@ import React from 'react';
 import { FormGroup, ControlLabel, HelpBlock, MenuItem } from 'react-bootstrap';
 import DatePicker from './datepicker/DatePicker';
 import LocalDate from './intrinsic/LocalDate';
+import List from "./intrinsic/List";
 import PromptoTypeahead from './typeahead/PromptoTypeahead';
 import ContextMenu from "./contextmenu/ContextMenu";
+
+window.LocalDate = LocalDate;
+window.List = List;
 
 export default class WidgetsPage extends React.Component {
 
@@ -34,16 +38,16 @@ export default class WidgetsPage extends React.Component {
 
     render() {
         const menuStyle = { position: "fixed", display: "block", left: 100, top: 100, zIndex: 999999 };
+        const selected = this.state.selected ? this.state.selected.name : "";
         return <>
                 <FormGroup >
                     <ControlLabel onContextMenu={this.handeContextMenu.bind(this)}>Label</ControlLabel>
                     <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
-                    <HelpBlock>Help</HelpBlock>
-                    <FormGroup>
-                        <ControlLabel>Employee</ControlLabel>
-                        <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
-                        <HelpBlock>Help</HelpBlock>
-                    </FormGroup>
+                </FormGroup>
+                <FormGroup>
+                    <ControlLabel>Employee</ControlLabel>
+                    <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
+                    <HelpBlock>{selected}</HelpBlock>
                 </FormGroup>
             { this.state.contextMenu &&
                 <div style={menuStyle}>
