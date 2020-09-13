@@ -38,10 +38,11 @@ class Preview extends React.Component {
 
     render() {
         const preview = this.props.preview || ( this.props.current && this.props.current.url ) ;
-        const state = preview ? "PREVIEW" : this.props.dragging ? "ACTIVE" : "READY";
+        const state = preview ? "PREVIEW" : this.props.previewLabel ? "LABEL" : this.props.dragging ? "ACTIVE" : "READY";
         const style = { ...this.props.style, backgroundColor: this.props.dragging ? "Highlight" : "white" };
         return  <div style={style}>
             { state==="PREVIEW" && <img src={preview} style={{ maxWidth: "98%", maxHeight: "98%", width: "auto", height: "auto" }} alt={""}/> }
+            { state==="LABEL" && this.props.previewLabel }
             { state==="ACTIVE" && ( this.props.dragLabel || 'Release to drop') }
             { state==="READY" && ( this.props.readyLabel || 'Drag file here' ) }
             <input type="file" ref={ref=>this.input=ref} onChange={this.props.onChange} style={{display: "none"}}/>
@@ -106,11 +107,12 @@ export default class DroppedFileWidget extends React.Component {
             {({getRootProps, getInputProps}) =>
                 <div {...getRootProps({className: 'dropzone'})}>
                     <Preview {...getInputProps({preview: this.state.preview,
+                                                previewLabel: this.props.previewLabel,
                                                 current: this.props.preview,
                                                 dragging: this.state.dragging,
                                                 style: this.props.style,
                                                 dragLabel: this.props.dragLabel,
-                                                readyLabel: this.props.readyLabel })} />
+                                                readyLabel: this.props.readyLabel})} />
                 </div>
             }
         </Dropzone>;
