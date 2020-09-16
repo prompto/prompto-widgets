@@ -72,7 +72,8 @@ export default class DroppedFileWidget extends React.Component {
         const file = files[0];
         if(file) {
             const FileRef = loadFileRef();
-            this.setState({file: file, preview: URL.createObjectURL(file)}, () => {
+            const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
+            this.setState({file: file, preview: preview}, () => {
                 if(this.props.onDrop)
                     this.props.onDrop(new FileRef(file))
             });
@@ -103,11 +104,12 @@ export default class DroppedFileWidget extends React.Component {
     }
 
    render() {
+        const previewLabel = this.state.file ? this.state.file.name : this.props.previewLabel;
         return <Dropzone onDrop={this.onDrop.bind(this)} onDragEnter={this.onDragEnter.bind(this)} onDragLeave={this.onDragLeave.bind(this)}>
             {({getRootProps, getInputProps}) =>
                 <div {...getRootProps({className: 'dropzone'})}>
                     <Preview {...getInputProps({preview: this.state.preview,
-                                                previewLabel: this.props.previewLabel,
+                                                previewLabel: previewLabel,
                                                 current: this.props.preview,
                                                 dragging: this.state.dragging,
                                                 style: this.props.style,
