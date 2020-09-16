@@ -14,7 +14,7 @@ module.exports = {
         ]
     },
     output: {
-        // filename: '../../../prompto-platform/Server/src/main/resources/js/widgets/react-dropped-file.js',
+        filename: '../../../prompto-factory/CodeFactory/CodeFactory/src/main/resources/libraries/react-file-uploader/main.js',
         library: ['DroppedFileWidget'],
         libraryTarget: 'umd'
     },

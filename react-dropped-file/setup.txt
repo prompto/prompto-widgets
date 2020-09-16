@@ -4,3 +4,5 @@ npm install yarn
 npm install --save-dev @babel/core @babel/preset-env
 npm install --save-dev babel-loader
 npm install --save-dev @babel/preset-react
+
+only works with node < 12 (v11.13.0)
