@@ -1,6 +1,6 @@
 const TerserPlugin = require('terser-webpack-plugin');
 var path = require('path');
-const target_dir = path.resolve(__dirname, "../../prompto-factory/CodeFactory/CodeFactory/src/main/resources/libraries/prompto-editors/");
+const target_dir = path.resolve(__dirname, "../../prompto-factory/CodeFactory/CodeFactory/src/main/resources/libraries/resource-editors/");
 
 const terser_options = {
     // do not mangle ProblemCollector to allow deriving it
@@ -15,7 +15,9 @@ module.exports = {
     output: {
         globalObject: 'this',
         path: target_dir,
-        filename: 'main.js'
+        filename: 'main.js',
+        library: ['ResourceEditors'],
+        libraryTarget: 'umd'
     },
     node: {
         module: "empty",

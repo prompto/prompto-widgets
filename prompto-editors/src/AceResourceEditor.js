@@ -20,7 +20,7 @@ export default class AceResourceEditor extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {display: "block", mimeType: "text/plain", body: ""};
+        this.state = {dmimeType: "text/plain", body: ""};
     }
 
     componentDidMount() {
@@ -67,8 +67,7 @@ export default class AceResourceEditor extends React.Component {
             session.setScrollTop(0);
         }
         editor.setReadOnly(this.props.readOnly || false);
-        const display = this.readDisplay(mimeType)
-        this.setState({display: display, mimeType: mimeType, body: resource.body});
+        this.setState({mimeType: mimeType, body: resource.body});
     }
 
     readMimeType(resource) {
@@ -82,10 +81,4 @@ export default class AceResourceEditor extends React.Component {
         } else
             return null;
     }
-
-    readDisplay(mimeType) {
-        return (mimeType && mimeType.startsWith("text/")) ? "block" : "none";
-    }
-
-
 }
