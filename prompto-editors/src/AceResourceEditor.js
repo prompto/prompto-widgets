@@ -10,8 +10,11 @@ import 'ace-builds/src-noconflict/mode-css';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-jsx';
+import "./AceWebpackResolver.js"
+
 
 const MIME_TYPE_MODE_ID = {
+    "page" : "yaml",
     "plain" : "text",
     "babel" : "jsx"
 };

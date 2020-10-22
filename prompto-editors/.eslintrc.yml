@@ -1,7 +1,7 @@
 env:
-  browser: false
+  browser: true
   es6: true
-  node: true
+  node: false
   amd: true
 extends: 'eslint:recommended'
 globals:
