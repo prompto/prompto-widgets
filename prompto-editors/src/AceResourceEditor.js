@@ -23,7 +23,7 @@ export default class AceResourceEditor extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {dmimeType: "text/plain", body: ""};
+        this.state = {mimeType: "text/plain", settingValue: false};
     }
 
     componentDidMount() {
@@ -45,17 +45,23 @@ export default class AceResourceEditor extends React.Component {
         return <div style={style} >
                 <AceEditor ref="AceEditor" name="resource-editor"
                            theme="eclipse" mode="text"
-                           value={this.state.body} onChange={this.bodyEdited.bind(this)}
+                           onChange={this.bodyEdited.bind(this)}
                            width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />
                 </div>;
     }
 
     bodyEdited(newBody) {
-        this.setState({body: newBody});
-        this.props.bodyEdited && this.props.bodyEdited(newBody);
+        if(this.state.settingValue)
+            return;
+        if(this.props.bodyEdited)
+            this.props.bodyEdited(newBody);
     }
 
     setResource(resource) {
+        this.setState({settingValue: true}, ()=>this.doSetResource(resource));
+    }
+
+    doSetResource(resource) {
         const mimeType = this.readMimeType(resource);
         const editor = this.refs.AceEditor.editor;
         const session = editor.getSession();
@@ -70,7 +76,7 @@ export default class AceResourceEditor extends React.Component {
             session.setScrollTop(0);
         }
         editor.setReadOnly(this.props.readOnly || false);
-        this.setState({mimeType: mimeType, body: resource.body});
+        this.setState({mimeType: mimeType, settingValue: false});
     }
 
     readMimeType(resource) {
