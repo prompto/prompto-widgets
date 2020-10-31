@@ -1,5 +1,6 @@
+const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-var path = require('path');
+const path = require('path');
 const target_dir = path.resolve(__dirname, "../../prompto-factory/CodeFactory/CodeFactory/src/main/resources/ide/");
 
 const terser_options = {
@@ -44,6 +45,9 @@ module.exports = {
     performance: {
         hints: false
     },
+    plugins: [
+        new CompressionPlugin()
+    ],
     externals: {
         'react': 'React',
         'react-dom': 'ReactDOM'
