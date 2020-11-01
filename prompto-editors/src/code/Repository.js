@@ -51,28 +51,31 @@ export default class Repository {
 
 
     publishLibraries() {
-        return {
-            removed: {},
-            added: this.librariesContext.getCatalog(),
-            core: true
-        };
+        return { type: "Document",
+                value: {
+                    removed: { type: "Document", value: {} },
+                    added: this.librariesContext.getCatalog(),
+                    core: true
+                }};
     }
 
 
     publishProject() {
-        return {
-            removed: {},
-            added: this.projectContext.getLocalCatalog(),
-            project: true
-        };
+        return { type: "Document",
+                value: {
+                    removed: { type: "Document", value: {} },
+                    added: this.projectContext.getLocalCatalog(),
+                    project: true
+                }};
     }
 
 
     unpublishProject() {
-        var delta = {
-            removed: this.projectContext.getLocalCatalog(),
-            added: {}
-        };
+        var delta = { type: "Document",
+                    value: {
+                    removed: this.projectContext.getLocalCatalog(),
+                    added: { type: "Document", value: {}}
+                }};
         this.projectContext = prompto.runtime.Context.newGlobalsContext();
         this.projectContext.setParentContext(this.librariesContext);
         this.statuses = {};

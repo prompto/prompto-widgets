@@ -1,8 +1,8 @@
 // eslint-disable-next-line
 import PromptoWorkerThread from "worker-loader!./PromptoWorkerThread";
+import PromptoChangeManager from "./PromptoChangeManager";
 // import { print } from '../utils/Utils';
 // import PromptoMarker from "./PromptoMarker";
-// import PromptoChangeManager from "./PromptoChangeManager";
 
 export default class PromptoWorkerClient extends window.ace.acequire("ace/worker/worker_client")
     .WorkerClient {
@@ -23,10 +23,10 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
         // done with the hacky stuff
         this.$worker.onmessage = this.messageHook.bind(this);
         this.$editor = editor;
-        this.addEventListeners(["errors", "annotate", "terminate", "value", "catalogUpdated", "contentUpdated", "inspected"]);
+        this.addEventListeners(["errors", "annotate", "terminate", "value", "catalogUpdated", "contentUpdated"]);
         this.attachToDocument(this.getSession().getDocument());
         this.send("setDialect", [ dialect ] );
-        // this.changeMgr = new PromptoChangeManager(super.emit.bind(this));
+        this.changeMgr = new PromptoChangeManager(super.emit.bind(this));
     }
 
     emit(event, data) {
@@ -110,16 +110,12 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
     }
 
     onCatalogUpdated(v) {
-        this.getSession().getMode().onCatalogUpdated(v.data);
+        const catalog = window.readJSONValue(v.data);
+        this.getSession().getMode().onCatalogUpdated(catalog);
     }
 
     onContentUpdated(v) {
         this.getSession().getMode().onContentUpdated(v.data);
     }
 
-    // a utility method to inspect worker data in Firefox/Safari
-    onInspected(v) {
-        console.log("onInspected");
-        // parent.inspected(v.data);
-    }
 }
