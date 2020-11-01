@@ -21,3 +21,4 @@ rules:
   no-prototype-builtins: [ "off" ]
   no-fallthrough: ["error", { "commentPattern": "no-break" }]
   react/jsx-uses-vars: 1
+  import/no-webpack-loader-syntax": "off"

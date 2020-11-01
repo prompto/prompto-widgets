@@ -41,7 +41,7 @@ export default class AceResourceEditor extends React.Component {
     }
 
     render() {
-        const style = {display: this.state.display, position: "relative", width: "100%",  height: "100%" };
+        const style = {position: "relative", width: "100%",  height: "100%" };
         return <div style={style} >
                 <AceEditor ref="AceEditor" name="resource-editor"
                            theme="eclipse" mode="text"
