@@ -76,7 +76,14 @@ export default class PromptoWorker extends Mirror {
         }
     }
 
-    setContent(content) {
+    getResourceBody(resource) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const body = this.$repo.getDeclarationBody(resource, this.$dialect);
+        this.sender.callback(body, callbackId);
+    }
+
+    /*
+    old_setContent(content) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         // remember value if it does not result from an edit
         if(content.creating) {
@@ -97,6 +104,7 @@ export default class PromptoWorker extends Mirror {
         delete this.$created;
         this.sender.callback(this.$value, callbackId);
     }
+    */
 
     locateContent(stackFrame) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE

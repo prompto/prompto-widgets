@@ -26,8 +26,8 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.setDialect(dialect);
     }
 
-    setContent(content, callback) {
-        this.$worker && this.$worker.setContent(content, callback);
+    getResourceBody(resource, callback) {
+        this.$worker && this.$worker.getResourceBody(resource, callback);
     }
 
     locateContent( stackFrame, callback) {

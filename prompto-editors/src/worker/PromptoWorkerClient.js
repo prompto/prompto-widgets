@@ -46,14 +46,10 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
         this.send("setDialect", [ dialect ] );
     }
 
-    setContent(content, callback) {
-        this.changeMgr.setContent(content);
-        var self_ = this;
-        this.call("setContent", [ content ], value => {
-            const changed = self_.onValue({ data: value });
-            if(callback)
-                callback(changed);
-        });
+    getResourceBody(resource, callback) {
+        const type = resource.$categories[resource.$categories.length-1].name;
+        const content = { type: type, name: resource.name, proto: resource.proto || null };
+        this.call("getResourceBody", [ content ], value => callback(value) );
     }
 
     getEditor() {
@@ -117,5 +113,6 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
     onContentUpdated(v) {
         this.getSession().getMode().onContentUpdated(v.data);
     }
+
 
 }

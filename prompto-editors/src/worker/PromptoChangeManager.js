@@ -95,7 +95,7 @@ export default class PromptoChangeManager {
         this.sendPendingChanges(true);
     }
 
-    setContent(content, callback) {
+    flush(callback) {
         this.sendPendingChanges(true);
     }
 

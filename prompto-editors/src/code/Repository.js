@@ -105,9 +105,9 @@ export default class Repository {
 
 
     getDeclaration(content) {
-        if (content.subType === "test")
+        if (content.type === "TestRef")
             return this.projectContext.getRegisteredTest(content.name);
-        else if (content.subType === "method") {
+        else if (content.type === "MethodRef") {
             var methodsMap = this.projectContext.getRegisteredDeclaration(content.name);
             return content.proto ? methodsMap.protos[content.proto] : methodsMap.getFirst();
         } else

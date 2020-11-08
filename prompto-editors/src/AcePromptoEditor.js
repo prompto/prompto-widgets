@@ -60,5 +60,25 @@ export default class AcePromptoEditor extends React.Component {
             console.log("Missing property: catalogUpdated");
     }
 
+    setResource(resource) {
+        this.setState({settingValue: true}, ()=>this.doSetResource(resource));
+    }
+
+
+    doSetResource(resource) {
+        const session = this.getSession();
+        // session.clearGutterDecorations(); // debugger-line
+        // session.clearBreakpoints();
+        session.getMode().getResourceBody(resource, body => {
+            const editor = this.getEditor();
+            editor.setValue(body, -1);
+            editor.setReadOnly(this.props.readOnly || false);
+            session.setScrollTop(0);
+            /* this.breakpoints.matchingContent(content).forEach(b => {
+                session.setBreakpoint(b.line - 1);
+            }); */
+            this.setState({settingValue: false});
+        });
+    }
 
 }
