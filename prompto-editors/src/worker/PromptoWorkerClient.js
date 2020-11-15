@@ -46,12 +46,6 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
         this.send("setDialect", [ dialect ] );
     }
 
-    getResourceBody(resource, callback) {
-        const type = resource.$categories[resource.$categories.length-1].name;
-        const content = { type: type, name: resource.name, proto: resource.proto || null };
-        this.call("getResourceBody", [ content ], value => callback(value) );
-    }
-
     getEditor() {
         return this.$editor.getEditor();
     }
@@ -111,7 +105,8 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
     }
 
     onContentUpdated(v) {
-        this.getSession().getMode().onContentUpdated(v.data);
+        const delta = window.readJSONValue(v.data);
+        this.getSession().getMode().onContentUpdated(delta);
     }
 
 

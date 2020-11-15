@@ -3,6 +3,7 @@ import Repository from '../code/Repository';
 import Defaults from '../code/Defaults';
 import Fetcher from '../utils/Fetcher';
 import LocalRunners from "../runner/LocalRunners";
+import {convertObjectToDocument} from "../code/CodeUtils";
 
 // eslint-disable-next-line
 const globals = self || window;
@@ -15,10 +16,10 @@ export default class PromptoWorker extends Mirror {
         this.$projectId = null;
         this.$project = null;
         this.$dialect = Defaults.dialect;
-        this.$value = this.doc.getValue();
-        this.$core = false;
+        this.$value = ""; // the last value received
         this.$repo = new Repository();
         this.$loading = {};
+        this.$selected = null;
         this.onInit();
     }
 
@@ -43,24 +44,46 @@ export default class PromptoWorker extends Mirror {
         this.loadProject(loadDependencies);
     }
 
+    setContent(content) {
+        this.$selected = content;
+        this.$value = null; // next update will be setting the value
+        this.$repo.reset();
+    }
+
     onUpdate() {
-        delete this.$created;
-        var value = this.doc.getValue();
-        var errorListener = new globals.AnnotatingErrorListener();
-        if(value === this.$value && !this.$selectedContent)
-            this.$repo.handleSetContent(value, this.$dialect, errorListener);
-        else {
-            const delta = this.$repo.handleEditContent(value, this.$dialect, errorListener, this.$selectedContent);
-            delete this.$selectedContent;
-            if (delta) {
-                if(delta.created)
-                    this.$created = delta.created;
-                this.sender.emit("contentUpdated", delta);
-            }
-        }
+        const value = this.doc.getValue();
+        let problems = this.handleSetContent(value);
+        if (problems == null)
+            problems = this.handleEditContent(value);
         this.$value = value;
-        // if you change the below, you might need to evolve PromptoChangeManager
-        this.sender.emit("annotate", errorListener.problems);
+        // changing the below requires evolving PromptoChangeManager
+        this.sender.emit("annotate", problems);
+    }
+
+    handleSetContent(value) {
+        if (this.$value)
+            return null;
+        if (this.$selected && value.length) {
+            const errorListener = new globals.AnnotatingErrorListener();
+            this.$repo.handleSetContent(value, this.$dialect, errorListener);
+            return errorListener.problems;
+        } else
+            return null;
+    }
+
+    handleEditContent(value) {
+        if(value !== this.$value) {
+            const errorListener = new globals.AnnotatingErrorListener();
+            const delta = this.$repo.handleEditContent(value, this.$dialect, errorListener, this.$selected);
+            if (delta) {
+                /* if(delta.created)
+                    this.$created = delta.created; */
+                const deltaDoc = convertObjectToDocument(delta);
+                this.sender.emit("contentUpdated", deltaDoc);
+            }
+            return errorListener.problems;
+        } else
+            return [];
     }
 
     setDialect(dialect) {
@@ -76,9 +99,9 @@ export default class PromptoWorker extends Mirror {
         }
     }
 
-    getResourceBody(resource) {
+    getContentBody(resource) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const body = this.$repo.getDeclarationBody(resource, this.$dialect);
+        const body = resource ? this.$repo.getDeclarationBody(resource, this.$dialect) : "";
         this.sender.callback(body, callbackId);
     }
 
@@ -89,17 +112,14 @@ export default class PromptoWorker extends Mirror {
         if(content.creating) {
             this.$value = "";
             this.$selectedContent = false;
-            this.$core = false;
             this.$repo.reset();
         } else if(content.name) {
             // don't replace newly created declaration body
             if(content.name !== this.$created)
                 this.$value = this.$repo.getDeclarationBody(content, this.$dialect);
-            this.$core = content.core || false;
         } else {
             this.$value = content.body || "";
             this.$selectedContent = (content.body || null) !== null;
-            this.$core = false;
         }
         delete this.$created;
         this.sender.callback(this.$value, callbackId);

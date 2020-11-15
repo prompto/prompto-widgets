@@ -26,8 +26,22 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.setDialect(dialect);
     }
 
+    resourceToContent(resource) {
+        if(resource !== null) {
+            const type = resource.$categories[resource.$categories.length - 1].name;
+            return {type: type, name: resource.name, prototype: resource.prototype || null};
+        } else
+            return null;
+    }
+
     getResourceBody(resource, callback) {
-        this.$worker && this.$worker.getResourceBody(resource, callback);
+        const content = this.resourceToContent(resource);
+        this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
+    }
+
+    setResource(resource) {
+        const content = this.resourceToContent(resource);
+        this.$worker && this.$worker.send("setContent", [ content ] );
     }
 
     locateContent( stackFrame, callback) {

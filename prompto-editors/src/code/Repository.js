@@ -3,6 +3,7 @@ import Codebase from "./Codebase";
 import Delta from "./Delta";
 
 let prompto = null;
+const profiling = false;
 
 /* need a deferred function for testing with Jest */
 function linkPrompto() {
@@ -23,13 +24,12 @@ export default class Repository {
         this.projectContext = prompto.runtime.Context.newGlobalsContext();
         this.projectContext.setParentContext(this.librariesContext);
         this.moduleId = null;
-        this.lastSuccess = []; // last piece of code successfully registered through handleUpdate
-        this.lastDialect = "E";
+        this.lastSuccess = new prompto.declaration.DeclarationList(); // last piece of code successfully registered through handleUpdate
         this.statuses = {};
     }
 
     reset() {
-        this.lastSuccess = [];
+        this.lastSuccess = new prompto.declaration.DeclarationList();
     }
 
     registerLibraryCode(code, dialect) {
@@ -55,7 +55,7 @@ export default class Repository {
                 value: {
                     removed: { type: "Document", value: {} },
                     added: this.librariesContext.getCatalog(),
-                    core: true
+                    library: true
                 }};
     }
 
@@ -73,9 +73,9 @@ export default class Repository {
     unpublishProject() {
         var delta = { type: "Document",
                     value: {
-                    removed: this.projectContext.getLocalCatalog(),
-                    added: { type: "Document", value: {}}
-                }};
+                        removed: this.projectContext.getLocalCatalog(),
+                        added: { type: "Document", value: {}}
+                    }};
         this.projectContext = prompto.runtime.Context.newGlobalsContext();
         this.projectContext.setParentContext(this.librariesContext);
         this.statuses = {};
@@ -109,7 +109,7 @@ export default class Repository {
             return this.projectContext.getRegisteredTest(content.name);
         else if (content.type === "MethodRef") {
             var methodsMap = this.projectContext.getRegisteredDeclaration(content.name);
-            return content.proto ? methodsMap.protos[content.proto] : methodsMap.getFirst();
+            return content.prototype ? methodsMap.protos[content.prototype] : methodsMap.getFirst();
         } else
             return this.projectContext.getRegisteredDeclaration(content.name);
     }
@@ -289,7 +289,7 @@ export default class Repository {
     }
 
     doHandleSetContent(content, dialect, listener) {
-     var decls = parse(content, dialect, listener);
+        var decls = parse(content, dialect, listener);
         var saved_listener = this.projectContext.problemListener;
         try {
             this.projectContext.problemListener = listener;
@@ -298,7 +298,6 @@ export default class Repository {
             this.projectContext.problemListener = saved_listener;
         }
         this.lastSuccess = decls; // assume registered content is always parsed successfully
-        this.lastDialect = dialect;
     }
 
 
@@ -326,25 +325,27 @@ export default class Repository {
     }
 
     doHandleEditContent(content, dialect, listener, selected) {
-        var startTime = Date.now();
-        var old_decls = this.lastSuccess;
-        var parser = newParser(content, dialect, listener);
-        var new_decls = parser.parse();
-        var parseEndTime = Date.now();
-        self.logDebug("parse time: " + (parseEndTime - startTime) + " ms");
+        const startTime = profiling ? Date.now() : null;
+        const old_decls = this.lastSuccess;
+        const parser = newParser(content, dialect, listener);
+        const new_decls = parser.parse();
+        const parseEndTime = profiling ? Date.now() : null;
+        if(profiling)
+            self.logDebug("parse time: " + (parseEndTime - startTime) + " ms");
         // look for duplicates
         this.checkDuplicates(old_decls, new_decls, listener);
-        var duplicatesEndTime = Date.now();
-        self.logDebug("check duplicates time: " + (duplicatesEndTime - parseEndTime) + " ms");
+        const duplicatesEndTime = profiling ? Date.now() : null;
+        if(profiling)
+            self.logDebug("check duplicates time: " + (duplicatesEndTime - parseEndTime) + " ms");
         // only update codebase if syntax is correct and there is no foreseeable damage
         if (listener.problems.length === 0) {
             this.lastSuccess = new_decls;
-            this.lastDialect = dialect;
-            var delta = this.updateCodebase(old_decls, new_decls, parser, dialect, listener);
-            var updateEndTime = Date.now();
-            self.logDebug("repo update time: " + (updateEndTime - duplicatesEndTime) + " ms");
+            const delta = this.updateCodebase(old_decls, new_decls, parser, dialect, listener);
+            const updateEndTime = profiling ? Date.now() : null;
+            if(profiling)
+                self.logDebug("repo update time: " + (updateEndTime - duplicatesEndTime) + " ms");
             if(delta) {
-                var $delta = delta.getContent();
+                const $delta = delta.getContent();
                 if (selected && new_decls.length === 1) // object might have been renamed
                     $delta.selected = new_decls[0].name;
                 $delta.editedCount = new_decls.length;

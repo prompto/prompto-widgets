@@ -104,3 +104,36 @@ export const getContentFromEntry = function(entry) {
     }
     return content;
 }
+
+function recursivelyConvertDocumentToObject(object) {
+    if(!object)
+        return object;
+    if(Array.isArray(object))
+        return object.map(recursivelyConvertDocumentToObject);
+    if(typeof(object) === typeof({})) {
+        const result = {};
+        if(object.type==="Document" && object.value)
+            object = object.value;
+        Object.getOwnPropertyNames(object).forEach(name => result[name] = recursivelyConvertDocumentToObject(object[name]), this);
+        return result;
+    }
+    return object;
+}
+
+export const convertDocumentToObject = recursivelyConvertDocumentToObject;
+
+function recursivelyConvertObjectToDocument(object) {
+    if(!object)
+        return object;
+    if(Array.isArray(object))
+        return object.map(recursivelyConvertObjectToDocument);
+    if(typeof(object) === typeof({})) {
+        const result = {};
+        Object.getOwnPropertyNames(object).forEach(name => result[name] = recursivelyConvertObjectToDocument(object[name]), this);
+        return { type: "Document", value: result };
+    }
+    return object;
+}
+
+
+export const convertObjectToDocument = recursivelyConvertObjectToDocument;
