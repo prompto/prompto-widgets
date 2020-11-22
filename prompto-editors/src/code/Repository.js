@@ -350,7 +350,7 @@ export default class Repository {
                     $delta.selected = new_decls[0].name;
                 $delta.editedCount = new_decls.length;
                 if(old_decls.length<=1 && new_decls.length===1)
-                    $delta.created = new_decls[0].name;
+                    $delta.newContent = delta.getFirstAdded();
                 return $delta;
             } else
                 return null;

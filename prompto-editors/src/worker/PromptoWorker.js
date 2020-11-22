@@ -44,9 +44,10 @@ export default class PromptoWorker extends Mirror {
         this.loadProject(loadDependencies);
     }
 
-    setContent(content) {
+    setContent(content, clearValue) {
         this.$selected = content;
-        this.$value = null; // next update will be setting the value
+        if(clearValue)
+            this.$value = null; // next update will be setting the value
         this.$repo.reset();
     }
 
@@ -76,8 +77,6 @@ export default class PromptoWorker extends Mirror {
             const errorListener = new globals.AnnotatingErrorListener();
             const delta = this.$repo.handleEditContent(value, this.$dialect, errorListener, this.$selected);
             if (delta) {
-                /* if(delta.created)
-                    this.$created = delta.created; */
                 const deltaDoc = convertObjectToDocument(delta);
                 this.sender.emit("contentUpdated", deltaDoc);
             }
@@ -142,7 +141,7 @@ export default class PromptoWorker extends Mirror {
         this.$value = "";
         const delta = this.$repo.handleDestroyed(content);
         if(delta)
-            this.sender.emit("catalogUpdated", delta.getContent());
+            this.sender.emit("catalogLoaded", delta.getContent());
         this.sender.emit("value", this.$value);
     }
 
@@ -246,17 +245,17 @@ export default class PromptoWorker extends Mirror {
 
     publishLibraries() {
         var catalog = this.$repo.publishLibraries();
-        this.sender.emit("catalogUpdated", catalog);
+        this.sender.emit("catalogLoaded", catalog);
     }
 
     publishProject() {
         var catalog = this.$repo.publishProject();
-        this.sender.emit("catalogUpdated", catalog);
+        this.sender.emit("catalogLoaded", catalog);
     }
 
     unpublishProject() {
         var catalog = this.$repo.unpublishProject();
-        this.sender.emit("catalogUpdated", catalog);
+        this.sender.emit("catalogLoaded", catalog);
     }
 
     markLoading(name) {

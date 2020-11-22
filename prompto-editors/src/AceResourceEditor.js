@@ -57,11 +57,11 @@ export default class AceResourceEditor extends React.Component {
             this.props.bodyEdited(newBody);
     }
 
-    setResource(resource) {
-        this.setState({settingValue: true}, ()=>this.doSetResource(resource));
+    setResource(resource, readOnly) {
+        this.setState({settingValue: true}, ()=>this.doSetResource(resource, readOnly));
     }
 
-    doSetResource(resource) {
+    doSetResource(resource, readOnly) {
         const mimeType = this.readMimeType(resource);
         const editor = this.refs.AceEditor.editor;
         const session = editor.getSession();
@@ -75,7 +75,7 @@ export default class AceResourceEditor extends React.Component {
             editor.setValue(resource.body, -1);
             session.setScrollTop(0);
         }
-        editor.setReadOnly(this.props.readOnly || false);
+        editor.setReadOnly(readOnly);
         this.setState({mimeType: mimeType, settingValue: false});
     }
 

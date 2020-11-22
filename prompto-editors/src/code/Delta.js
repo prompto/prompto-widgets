@@ -36,6 +36,19 @@ export default class Delta {
         return {removed: this.removed, added: this.added};
     }
 
+    getFirstAdded() {
+        if(!this.added)
+            return null;
+        for(let key in this.added) {
+            const entry = this.added[key][0];
+            if(key === "methods")
+                return entry.protos[0];
+            else
+                return entry;
+        }
+        return null;
+    }
+
     filterOutDuplicates() {
         if (!this.removed && !this.added)
             return 0;

@@ -39,9 +39,9 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
     }
 
-    setResource(resource) {
+    setResource(resource, clearValue) {
         const content = this.resourceToContent(resource);
-        this.$worker && this.$worker.send("setContent", [ content ] );
+        this.$worker && this.$worker.send("setContent", [ content, clearValue ] );
     }
 
     locateContent( stackFrame, callback) {
@@ -95,8 +95,8 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.send("dependenciesUpdated", [] );
     }
 
-    onCatalogUpdated(catalog) {
-        this.$editor.catalogUpdated(catalog);
+    onCatalogLoaded(catalog) {
+        this.$editor.catalogLoaded(catalog);
     }
 
     onContentUpdated(catalog) {

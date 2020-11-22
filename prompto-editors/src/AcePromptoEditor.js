@@ -10,7 +10,7 @@ export default class AcePromptoEditor extends React.Component {
     constructor(props) {
         super(props);
         this.projectId = null;
-        this.state = {settingValue: false};
+        this.state = {newContent: null};
     }
 
     getEditor() {
@@ -53,40 +53,41 @@ export default class AcePromptoEditor extends React.Component {
         this.getSession().getMode().setProject(dbId, loadDependencies);
     }
 
-    catalogUpdated(catalog) {
-        if(this.props.catalogUpdated)
-            this.props.catalogUpdated(catalog);
+    catalogLoaded(catalog) {
+        if(this.props.catalogLoaded)
+            this.props.catalogLoaded(catalog);
         else
-            console.log("Missing property: catalogUpdated");
+            console.log("Missing property: catalogLoaded");
     }
 
     contentUpdated(delta) {
-        if(this.props.contentUpdated)
+        if(this.props.contentUpdated) {
+            this.setState({newContent: delta.newContent || null});
             this.props.contentUpdated(delta);
-        else
+        } else
             console.log("Missing property: contentUpdated");
     }
 
-    setResource(resource) {
-        this.setState({settingValue: true}, ()=>this.doSetResource(resource));
-    }
-
-    doSetResource(resource) {
+    setResource(resource, readOnly) {
         const editor = this.getEditor();
         const session = editor.getSession();
         const mode = session.getMode();
         // session.clearGutterDecorations(); // debugger-line
         // session.clearBreakpoints();
-        mode.setResource(resource);
-        mode.getResourceBody(resource, body => {
-           editor.setValue(body, -1);
-           editor.setReadOnly(this.props.readOnly || false);
-           session.setScrollTop(0);
-           /* this.breakpoints.matchingContent(content).forEach(b => {
-               session.setBreakpoint(b.line - 1);
-           }); */
-        });
-           // this.setState({settingValue: false});
+        if(this.state.newContent) {
+            mode.setResource(resource, false);
+            this.setState({newContent: null});
+        } else {
+            mode.setResource(resource, true);
+            mode.getResourceBody(resource, body => {
+                editor.setValue(body, -1);
+                editor.setReadOnly(readOnly);
+                session.setScrollTop(0);
+                /* this.breakpoints.matchingContent(content).forEach(b => {
+                    session.setBreakpoint(b.line - 1);
+                }); */
+            });
+        }
     }
 
 }
