@@ -40,11 +40,14 @@ export default class Delta {
         if(!this.added)
             return null;
         for(let key in this.added) {
-            const entry = this.added[key][0];
-            if(key === "methods")
-                return entry.protos[0];
-            else
-                return entry;
+            const list = this.added[key];
+            if(list && list.length > 0) {
+                const entry = list[0];
+                if (key === "methods") {
+                    return { ...{name: entry.name}, ...entry.protos[0] };
+                } else
+                    return entry;
+            }
         }
         return null;
     }

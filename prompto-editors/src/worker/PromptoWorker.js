@@ -46,9 +46,10 @@ export default class PromptoWorker extends Mirror {
 
     setContent(content, clearValue) {
         this.$selected = content;
-        if(clearValue)
+        if(clearValue) {
             this.$value = null; // next update will be setting the value
-        this.$repo.reset();
+            this.$repo.reset();
+        }
     }
 
     onUpdate() {
