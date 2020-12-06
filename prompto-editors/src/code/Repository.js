@@ -1,9 +1,9 @@
 import { parse, unparse, newParser, translate } from './CodeUtils';
-import Codebase from "./Codebase";
+import Catalog from "./Catalog";
 import Delta from "./Delta";
 
 let prompto = null;
-const profiling = false;
+let profiling = false;
 
 /* need a deferred function for testing with Jest */
 function linkPrompto() {
@@ -272,7 +272,7 @@ export default class Repository {
             var decls = parse(obj_status.stuff.value.body, obj_status.stuff.value.dialect);
             decls[0].unregister(this.projectContext);
             var delta = new Delta();
-            delta.removed = new Codebase(decls, this.librariesContext);
+            delta.removed = new Catalog(decls, this.librariesContext);
             delta.filterOutDuplicates();
             return delta;
         } else
@@ -387,8 +387,8 @@ export default class Repository {
 
     updateCodebase(old_decls, new_decls, parser, dialect, listener) {
         var delta = new Delta();
-        delta.removed = new Codebase(old_decls, this.projectContext, this.librariesContext);
-        delta.added = new Codebase(new_decls, this.projectContext, this.librariesContext);
+        delta.removed = new Catalog(old_decls, this.projectContext, this.librariesContext);
+        delta.added = new Catalog(new_decls, this.projectContext, this.librariesContext);
         var changedIdsCount = delta.filterOutDuplicates();
         var handled = this.updateRenamed(changedIdsCount, old_decls, new_decls, parser, dialect);
         this.updateAppContext(old_decls, new_decls, listener);

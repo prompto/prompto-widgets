@@ -1,5 +1,5 @@
 import Delta from './Delta';
-import Codebase from './Codebase';
+import Catalog from './Catalog';
 
 beforeAll(()=>{
     jest.requireActual("../../../../../../../prompto-javascript/JavaScript-Core/src/main");
@@ -11,8 +11,8 @@ beforeAll(()=>{
 
 it('filterOutDuplicates preserves added single proto', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
-    delta.added = new Codebase();
+    delta.removed = new Catalog();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [{proto: "simple", main: true}]
     }];
@@ -23,24 +23,24 @@ it('filterOutDuplicates preserves added single proto', () => {
 
 it('filterOutDuplicates preserves removed single proto', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [{proto: "simple", main: true}]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     var count = delta.filterOutDuplicates();
     expect(count).toEqual(1);
 });
 
 it('filterOutDuplicates ignores unchanged single proto', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "simple", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "simple", main: true}
@@ -53,13 +53,13 @@ it('filterOutDuplicates ignores unchanged single proto', () => {
 
 it('filterOutDuplicates adds and removes distinct protos', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "simple1", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "simple2", main: true}
@@ -72,13 +72,13 @@ it('filterOutDuplicates adds and removes distinct protos', () => {
 
 it('filterOutDuplicates adds proto when adding and removing other proto', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "simple2", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "simple1", main: true},
@@ -92,14 +92,14 @@ it('filterOutDuplicates adds proto when adding and removing other proto', () => 
 
 it('filterOutDuplicates removes proto when adding and removing other proto', () => {
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "simple1", main: true},
             {proto: "simple2", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "simple2", main: true}
@@ -129,8 +129,8 @@ function createContextWithMethods(methods) {
 it('adjustForMovingProtos preserves added proto', () => {
     var context = createContextWithMethods([{name: "test", parameters: ["simple"]}]);
     var delta = new Delta();
-    delta.removed = new Codebase();
-    delta.added = new Codebase();
+    delta.removed = new Catalog();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "(simple)", main: true}
@@ -146,13 +146,13 @@ it('adjustForMovingProtos preserves added proto', () => {
 it('adjustForMovingProtos preserves removed proto', () => {
     var context = createContextWithMethods([]);
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "(simple)", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     var count = delta.filterOutDuplicates();
     expect(count).toEqual(1);
     delta.adjustForMovingProtos(context);
@@ -164,13 +164,13 @@ it('adjustForMovingProtos preserves removed proto', () => {
 it('adjustForMovingProtos preserves added and removed protos', () => {
     var context = createContextWithMethods([{name: "test", parameters: ["(simple2)"]}]);
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "(simple1)", main: true}
         ]
     }];
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "(simple2)", main: true}
@@ -187,7 +187,7 @@ it('adjustForMovingProtos preserves existing protos when moving protos', () => {
     var context = createContextWithMethods([{name: "test", parameters: ["(simple1)"]},
         {name: "test", parameters: ["(simple2)"]}]);
     var delta = new Delta();
-    delta.added = new Codebase();
+    delta.added = new Catalog();
     delta.added.methods = [{
         name: "test", protos: [
             {proto: "(simple2)", main: true}
@@ -211,7 +211,7 @@ it('adjustForMovingProtos preserves existing protos when moving protos', () => {
 it('adjustForMovingProtos preserves existing protos when removing proto', () => {
     var context = createContextWithMethods([{name: "test", parameters: ["(simple2)"]}]);
     var delta = new Delta();
-    delta.removed = new Codebase();
+    delta.removed = new Catalog();
     delta.removed.methods = [{
         name: "test", protos: [
             {proto: "(simple1)", main: true}

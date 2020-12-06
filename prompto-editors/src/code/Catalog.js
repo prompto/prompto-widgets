@@ -10,7 +10,7 @@ function linkPrompto() {
 }
 
 /* an object which represents a catalog of declarations, classified by type */
-export default class Codebase {
+export default class Catalog {
 
     constructor(decls, globalContext, filterContext) {
         linkPrompto();

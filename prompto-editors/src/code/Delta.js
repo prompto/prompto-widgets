@@ -1,5 +1,5 @@
 import { sortBy } from './CodeUtils';
-import Codebase from './Codebase';
+import Catalog from './Catalog';
 
 /**
  * An object which represents the delta between 2 catalogs
@@ -10,8 +10,6 @@ import Codebase from './Codebase';
  *  - declaration added
  *  - declarations changed, which for global methods adds complexity because
  *  methods are displayed differently depending on their number of prototypes
- *  The below code is not optimized. The optimization is to only redisplay what is needed,
- *  not to optimize the calculation of what needs to be redisplayed.
  *  This follows the assumption that the number of overloads for a method name is generally very low (< 10).
  */
 
@@ -199,7 +197,7 @@ export default class Delta {
             var proto_to_move = {proto: proto, main: decl.protos[proto].isEligibleAsMain()};
             // add it to the remove list
             if (!this.removed)
-                this.removed = new Codebase();
+                this.removed = new Catalog();
             var removed = this.findOrCreateMethod(this.removed, method.name);
             removed.proto_to_remove = proto_to_move;
             // add it to the add list
@@ -237,7 +235,7 @@ export default class Delta {
         method.proto_to_remove = proto_to_move;
         // add it to the added list
         if (!this.added)
-            this.added = new Codebase();
+            this.added = new Catalog();
         var added = this.findOrCreateMethod(this.added, decl.name);
         // avoid adding it twice (it might have just been added)
         added.protos.forEach(current => {

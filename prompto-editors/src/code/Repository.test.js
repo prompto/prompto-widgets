@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import Delta from './Delta';
-import Codebase from './Codebase';
+import Catalog from './Catalog';
 import Repository from './Repository';
 
 beforeAll(()=>{
