@@ -109,7 +109,7 @@ export default class Repository {
             return this.projectContext.getRegisteredTest(content.name);
         else if (content.type === "MethodRef") {
             var methodsMap = this.projectContext.getRegisteredDeclaration(content.name);
-            return content.prototype ? methodsMap.protos[content.prototype] : methodsMap.getFirst();
+            return methodsMap.protos[content.prototype || ""] || methodsMap.getFirst();
         } else
             return this.projectContext.getRegisteredDeclaration(content.name);
     }
