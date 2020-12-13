@@ -90,4 +90,11 @@ export default class AcePromptoEditor extends React.Component {
         }
     }
 
+    destroyResource(resource) {
+        const editor = this.getEditor();
+        const session = editor.getSession();
+        const mode = session.getMode();
+        mode.destroyResource(resource);
+    }
+
 }

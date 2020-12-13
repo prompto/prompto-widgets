@@ -53,8 +53,9 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.call("locateSection", [ breakpoint ], callback);
     }
 
-    destroy(content) {
-        this.$worker && this.$worker.send("destroy", [ content ] );
+    destroyResource(resource) {
+        const content = this.resourceToContent(resource);
+        this.$worker && this.$worker.send("destroyContent", [ content ] );
     }
 
     prepareCommit(callback) {

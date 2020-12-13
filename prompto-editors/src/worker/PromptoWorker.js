@@ -105,27 +105,6 @@ export default class PromptoWorker extends Mirror {
         this.sender.callback(body, callbackId);
     }
 
-    /*
-    old_setContent(content) {
-        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        // remember value if it does not result from an edit
-        if(content.creating) {
-            this.$value = "";
-            this.$selectedContent = false;
-            this.$repo.reset();
-        } else if(content.name) {
-            // don't replace newly created declaration body
-            if(content.name !== this.$created)
-                this.$value = this.$repo.getDeclarationBody(content, this.$dialect);
-        } else {
-            this.$value = content.body || "";
-            this.$selectedContent = (content.body || null) !== null;
-        }
-        delete this.$created;
-        this.sender.callback(this.$value, callbackId);
-    }
-    */
-
     locateContent(stackFrame) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         const content = this.$repo.locateContent(stackFrame);
@@ -138,7 +117,7 @@ export default class PromptoWorker extends Mirror {
         this.sender.callback(section, callbackId);
     }
 
-    destroy(content) {
+    destroyContent(content) {
         this.$value = "";
         const delta = this.$repo.handleDestroyed(content);
         if(delta)
