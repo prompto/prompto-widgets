@@ -79,8 +79,9 @@ export default class PromptoWorker extends Mirror {
             const delta = this.$repo.handleEditContent(value, this.$dialect, errorListener, this.$selected);
             if (delta) {
                 const deltaDoc = convertObjectToDocument(delta);
-                this.sender.emit("contentUpdated", deltaDoc);
-            }
+                this.sender.emit("catalogUpdated", deltaDoc);
+            } else
+                this.sender.emit("bodyEdited", this.$selected);
             return errorListener.problems;
         } else
             return [];

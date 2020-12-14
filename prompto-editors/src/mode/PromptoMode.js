@@ -100,8 +100,12 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$editor.catalogLoaded(catalog);
     }
 
-    onContentUpdated(catalog) {
-        this.$editor.contentUpdated(catalog);
+    onCatalogUpdated(catalog) {
+        this.$editor.catalogUpdated(catalog);
+    }
+
+    onBodyEdited(content) {
+        this.$editor.bodyEdited(content);
     }
 
 }

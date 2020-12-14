@@ -60,12 +60,19 @@ export default class AcePromptoEditor extends React.Component {
             console.log("Missing property: catalogLoaded");
     }
 
-    contentUpdated(delta) {
-        if(this.props.contentUpdated) {
+    catalogUpdated(delta) {
+        if(this.props.catalogUpdated) {
             this.setState({newContent: delta.newContent || null});
-            this.props.contentUpdated(delta);
+            this.props.catalogUpdated(delta);
         } else
-            console.log("Missing property: contentUpdated");
+            console.log("Missing property: catalogUpdated");
+    }
+
+    bodyEdited(content) {
+        if(this.props.bodyEdited)
+            this.props.bodyEdited(content);
+        else
+            console.log("Missing property: bodyEdited");
     }
 
     setResource(resource, readOnly) {
