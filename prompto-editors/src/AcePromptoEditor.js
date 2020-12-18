@@ -41,7 +41,7 @@ export default class AcePromptoEditor extends React.Component {
     render() {
         const style = {position: "relative", width: "100%",  height: "100%" };
         return <div style={style} >
-            <AceEditor ref="AceEditor" name="resource-editor"
+            <AceEditor ref="AceEditor" name="prompto-editor"
                        theme="eclipse" mode="text"
                        width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />
         </div>;
