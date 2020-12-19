@@ -27,7 +27,7 @@ export default class PromptoHighlightRules extends window.ace.acequire(
 
         const other = (
             "all|any|as|contains|def|define|doing|expecting|" +
-            "index|matching|receiving|returning|verifying"
+            "index|matching|receiving|returning|super|verifying"
         );
 
         const functions = (
