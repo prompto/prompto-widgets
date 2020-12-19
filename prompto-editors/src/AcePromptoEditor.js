@@ -75,6 +75,13 @@ export default class AcePromptoEditor extends React.Component {
             console.log("Missing property: bodyEdited");
     }
 
+    setBody(body) {
+        const editor = this.getEditor();
+        const session = editor.getSession();
+        editor.setValue(body, -1);
+        session.setScrollTop(0);
+    }
+
     setResource(resource, readOnly) {
         const editor = this.getEditor();
         const session = editor.getSession();
