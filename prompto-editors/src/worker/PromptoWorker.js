@@ -80,7 +80,7 @@ export default class PromptoWorker extends Mirror {
             if (delta) {
                 const deltaDoc = convertObjectToDocument(delta);
                 this.sender.emit("catalogUpdated", deltaDoc);
-            } else
+            } else if(this.$selected)
                 this.sender.emit("bodyEdited", this.$selected);
             return errorListener.problems;
         } else
