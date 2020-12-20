@@ -125,8 +125,8 @@ export default class Repository {
 
     /* id = object received from the UI */
     idFromContent(content) {
-        if (content.subType === "method")
-            return content.name + "/" + (content.proto || "");
+        if (content.type === "MethodRef")
+            return content.name + "/" + (content.prototype || "");
         else
             return content.name;
     }

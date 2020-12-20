@@ -78,8 +78,8 @@ export default class PromptoWorker extends Mirror {
             const errorListener = new globals.AnnotatingErrorListener();
             const delta = this.$repo.handleEditContent(value, this.$dialect, errorListener, this.$selected);
             if (delta) {
-                const deltaDoc = convertObjectToDocument(delta);
-                this.sender.emit("catalogUpdated", deltaDoc);
+                const data = convertObjectToDocument(delta);
+                this.sender.emit("catalogUpdated", data);
             } else if(this.$selected)
                 this.sender.emit("bodyEdited", this.$selected);
             return errorListener.problems;
@@ -121,8 +121,10 @@ export default class PromptoWorker extends Mirror {
     destroyContent(content) {
         this.$value = "";
         const delta = this.$repo.handleDestroyed(content);
-        if(delta)
-            this.sender.emit("catalogLoaded", delta.getContent());
+        if(delta) {
+            const data = convertObjectToDocument(delta.getContent());
+            this.sender.emit("catalogUpdated", data);
+        }
         this.sender.emit("value", this.$value);
     }
 
