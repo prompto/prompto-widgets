@@ -39,8 +39,8 @@ export default class Repository {
 
     registerLibraryDeclarations(declarations) {
         declarations.forEach(obj => {
-            var decl = parse(obj.value.body, obj.value.dialect);
-            decl.register(this.librariesContext);
+            var decls = parse(obj.value.body, obj.value.dialect);
+            decls.register(this.librariesContext);
         }, this);
     }
 
@@ -100,7 +100,10 @@ export default class Repository {
 
     getDeclarationBody(content, dialect) {
         var decl = this.getDeclaration(content);
-        return unparse(this.projectContext, decl, dialect);
+        if(decl.sourceCode && decl.sourceCode.dialect == dialect)
+            return decl.sourceCode.body;
+        else
+            return unparse(this.projectContext, decl, dialect);
     }
 
 
@@ -329,6 +332,9 @@ export default class Repository {
         const old_decls = this.lastSuccess;
         const parser = newParser(content, dialect, listener);
         const new_decls = parser.parse();
+        new_decls.forEach( decl => {
+            decl.sourceCode = { dialect: dialect, body: decl.fetchBody(parser) };
+        });
         const parseEndTime = profiling ? Date.now() : null;
         if(profiling)
             self.logDebug("parse time: " + (parseEndTime - startTime) + " ms");

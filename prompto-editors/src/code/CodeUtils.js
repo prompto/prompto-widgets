@@ -9,8 +9,8 @@ export const inferDialect = function(path) {
 /* a function for getting a new prompto code parser */
 export const newParser = function(input, dialect, listener) {
     const prompto = globals.prompto;
-    var klass = prompto.parser[dialect + "CleverParser"];
-    var parser = new klass(input);
+    const klass = prompto.parser[dialect + "CleverParser"];
+    const parser = new klass(input);
     parser.removeErrorListeners();
     if(listener)
         parser.addErrorListener(listener);
@@ -19,27 +19,25 @@ export const newParser = function(input, dialect, listener) {
 
 /* a function for parsing prompto code into declarations */
 export const parse = function(input, dialect, listener) {
-    var parser = newParser(input, dialect, listener);
-    return parser.parse();
+    const parser = newParser(input, dialect, listener);
+    const decls = parser.parse();
+    decls.forEach( decl => {
+        decl.sourceCode = { dialect: dialect, body: decl.fetchBody(parser) };
+    });
+    return decls;
 };
 
 /* a function for producing code from a declaration object */
 export const unparse = function(context, decl, dialect) {
     const prompto = globals.prompto;
-    var d = prompto.parser.Dialect[dialect];
-    var writer = new prompto.utils.CodeWriter(d, context.newChildContext());
+    const d = prompto.parser.Dialect[dialect];
+    const writer = new prompto.utils.CodeWriter(d, context.newChildContext());
     // avoid throwing since this would stop the translation
     writer.context.problemListener = new prompto.problem.ProblemCollector();
-    if(decl.comments) {
-        decl.comments.forEach(function (cmt) {
-            cmt.toDialect(writer);
-        });
-    }
-    if(decl.annotations) {
-        decl.annotations.forEach(function (ant) {
-            ant.toDialect(writer);
-        });
-    }
+    if(decl.comments)
+        decl.comments.forEach(cmt => cmt.toDialect(writer));
+    if(decl.annotations)
+        decl.annotations.forEach(ann => ann.toDialect(writer));
     decl.toDialect(writer);
     return writer.toString();
 };
@@ -47,9 +45,9 @@ export const unparse = function(context, decl, dialect) {
 /* a function for translating current input to other dialect */
 export const translate = function(context, data, from, to) {
     const prompto = globals.prompto;
-    var decls = parse(data, from); // could be cached
-    var dialect = prompto.parser.Dialect[to];
-    var writer = new prompto.utils.CodeWriter(dialect, context.newChildContext());
+    const decls = parse(data, from); // could be cached
+    const dialect = prompto.parser.Dialect[to];
+    const writer = new prompto.utils.CodeWriter(dialect, context.newChildContext());
     decls.toDialect(writer);
     return writer.toString();
 };
@@ -71,7 +69,7 @@ export const getCodebaseLength = function(codebase) {
     if(!codebase)
         return 0;
     let length = 0;
-    for(var name in codebase) {
+    for(let name in codebase) {
         if(Array.isArray(codebase[name]))
             length += codebase[name].length;
     }
@@ -81,7 +79,7 @@ export const getCodebaseLength = function(codebase) {
 export const getFirstCodebaseEntry = function(codebase) {
     if(!codebase)
         return null;
-    for(var name in codebase) {
+    for(let name in codebase) {
         if(Array.isArray(codebase[name]) && codebase[name].length > 0)
             return { key: name, value: codebase[name][0] };
     }
