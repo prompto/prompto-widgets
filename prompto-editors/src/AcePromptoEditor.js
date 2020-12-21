@@ -53,6 +53,10 @@ export default class AcePromptoEditor extends React.Component {
         this.getSession().getMode().setProject(dbId, loadDependencies);
     }
 
+    setDialect(dialect) {
+        this.getSession().getMode().setDialect(dialect);
+    }
+
     catalogLoaded(catalog) {
         if(this.props.catalogLoaded)
             this.props.catalogLoaded(catalog);
