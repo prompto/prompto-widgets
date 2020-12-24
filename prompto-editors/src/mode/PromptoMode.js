@@ -96,6 +96,10 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.send("dependenciesUpdated", [] );
     }
 
+    onProgressed(message) {
+        this.$editor.progressed(message);
+    }
+
     onCatalogLoaded(catalog) {
         this.$editor.catalogLoaded(catalog);
     }

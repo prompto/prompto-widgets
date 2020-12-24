@@ -32,7 +32,9 @@ export default class PromptoWorker extends Mirror {
 
     loadCore() {
         this.markLoading("Core");
+        this.sender.emit("progressed", "Fetching Core code");
         Fetcher.instance.getTEXT("prompto/prompto.pec", null, text => {
+            this.sender.emit("progressed", "Loading Core code");
             this.$repo.registerLibraryCode(text, "E");
             this.markLoaded("Core");
         });
@@ -130,10 +132,12 @@ export default class PromptoWorker extends Mirror {
 
 
     loadProject(loadDependencies) {
+        this.sender.emit("progressed", "Fetching project description");
         this.fetchProjectDescription(this.$projectId, true, response => {
             if (response.error)
                 ; // TODO something
             else {
+                this.sender.emit("progressed", "Fetching project description complete");
                 this.$project = response.data.value;
                 if (loadDependencies)
                     this.loadDependencies();
@@ -146,10 +150,12 @@ export default class PromptoWorker extends Mirror {
                     console.error(trace);
                 }
                 this.markLoaded("%Description%");
+                this.sender.emit("progressed", "Fetching project code");
                 this.fetchModuleDeclarations(this.$projectId, response => {
                     if (response.error)
                         ; // TODO something
                     else {
+                        this.sender.emit("progressed", "Parsing project code");
                         const cursor = response.data.value;
                         this.$repo.registerProjectDeclarations(this.$projectId, cursor.items);
                         this.markLoaded("Project");
@@ -185,10 +191,12 @@ export default class PromptoWorker extends Mirror {
                         console.error(trace);
                     }
                 }
+                this.sender.emit("progressed", "Fetching " + dependency.name + " code");
                 this.fetchModuleDeclarations(library.dbId, response => {
                     if (response.error)
                         ; // TODO something
                     else {
+                        this.sender.emit("progressed", "Parsing " + dependency.name + " code");
                         const cursor = response.data.value;
                         this.$repo.registerLibraryDeclarations(cursor.items);
                         this.markLoaded(dependency.name);
@@ -248,6 +256,8 @@ export default class PromptoWorker extends Mirror {
     }
 
     markLoaded (name) {
+        if(name !== "%Description%")
+            this.sender.emit("progressed", "Loading " + name + " complete");
         delete this.$loading[name];
         const complete = Object.keys(this.$loading).length === 0;
         // is this the Project ?

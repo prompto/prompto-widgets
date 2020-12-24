@@ -23,7 +23,7 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
         // done with the hacky stuff
         this.$worker.onmessage = this.messageHook.bind(this);
         this.$editor = editor;
-        this.addEventListeners(["errors", "annotate", "terminate", "value", "catalogLoaded", "catalogUpdated", "bodyEdited"]);
+        this.addEventListeners(["errors", "annotate", "terminate", "value", "progressed", "catalogLoaded", "catalogUpdated", "bodyEdited"]);
         this.attachToDocument(this.getSession().getDocument());
         this.send("setDialect", [ dialect ] );
         this.changeMgr = new PromptoChangeManager(super.emit.bind(this));
@@ -97,6 +97,10 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
             this.getEditor().focus();
         }
         return changed;
+    }
+
+    onProgressed(v) {
+        this.getSession().getMode().onProgressed(v.data);
     }
 
     onCatalogLoaded(v) {
