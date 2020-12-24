@@ -226,13 +226,15 @@ export default class PromptoWorker extends Mirror {
     }
 
 
-    publishLibraries() {
+    publishLibraries(complete) {
         var catalog = this.$repo.publishLibraries();
+        catalog.value.complete = complete;
         this.sender.emit("catalogLoaded", catalog);
     }
 
-    publishProject() {
+    publishProject(complete) {
         var catalog = this.$repo.publishProject();
+        catalog.value.complete = complete;
         this.sender.emit("catalogLoaded", catalog);
     }
 
@@ -247,15 +249,16 @@ export default class PromptoWorker extends Mirror {
 
     markLoaded (name) {
         delete this.$loading[name];
+        const complete = Object.keys(this.$loading).length === 0;
         // is this the Project ?
         if(name==="Project")
-            this.publishProject();
+            this.publishProject(complete);
         // is this the last library ?
         else if (Object.keys(this.$loading).length === 1 && "Project" in this.$loading)
-            this.publishLibraries();
+            this.publishLibraries(complete);
         // is this the last loading
-        else if (Object.keys(this.$loading).length === 0)
-            this.publishLibraries();
+        else if (complete)
+            this.publishLibraries(complete);
     }
 
     prepareCommit() {
