@@ -58,16 +58,13 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.send("destroyContent", [ content ] );
     }
 
-    prepareCommit(callback) {
-        this.$worker && this.$worker.call("prepareCommit", [], callback);
+    getEditedResources(resources, callback) {
+        const contents = resources.map(edited => this.resourceToContent(edited.stuff), this);
+        this.$worker && this.$worker.call("getEditedContents", [ contents ], callback);
     }
 
-    commitFailed(dbId) {
-        this.$worker && this.$worker.send("commitFailed", [ dbId ] );
-    }
-
-    commitSuccessfull(dbId) {
-        this.$worker && this.$worker.send("commitSuccessfull", [ dbId ] );
+    markChangesCommitted() {
+        this.$worker && this.$worker.send("markChangesCommitted", [ ] );
     }
 
     runTestOrMethod(id, mode, callback) {

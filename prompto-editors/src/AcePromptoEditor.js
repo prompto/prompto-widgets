@@ -18,7 +18,11 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     getSession() {
-        return this.refs.AceEditor.editor.getSession();
+        return this.getEditor().getSession();
+    }
+
+    getMode() {
+        return this.getSession().getMode();
     }
 
     componentDidMount() {
@@ -117,10 +121,35 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     destroyResource(resource) {
-        const editor = this.getEditor();
-        const session = editor.getSession();
-        const mode = session.getMode();
+        const mode = this.getMode();
         mode.destroyResource(resource);
+    }
+
+
+    getEditedResources(resources, callback) {
+        const mode = this.getMode();
+        mode.getEditedResources(resources, edited => {
+            const instances = window.readJSONValue(edited);
+            instances.forEach(this.convertStuffToMutated, this);
+            callback(instances);
+        });
+    }
+
+    convertStuffToMutated(edited) {
+        const stuff = edited.stuff;
+        stuff.$mutable = true;
+        const category = stuff.$storable.category;
+        stuff.$storable = window.$DataStore.instance.newStorableDocument(category, stuff.dbIdListener.bind(stuff));
+        stuff.getAttributeNames().forEach(name => {
+            const isEnum = stuff[name] && stuff[name].name && stuff[name].name === stuff[name].value;
+            stuff.setMember(name, stuff[name], true, true, isEnum);
+        });
+        return edited;
+    }
+
+    markChangesCommitted() {
+        const mode = this.getMode();
+        mode.markChangesCommitted();
     }
 
 }

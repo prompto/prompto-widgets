@@ -102,10 +102,16 @@ export default class PromptoWorker extends Mirror {
         }
     }
 
-    getContentBody(resource) {
+    getContentBody(content) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const body = resource ? this.$repo.getDeclarationBody(resource, this.$dialect) : "";
+        const body = content ? this.$repo.getDeclarationBody(content, this.$dialect) : "";
         this.sender.callback(body, callbackId);
+    }
+
+    getEditedContents(contents) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const edited = this.$repo.getEditedDeclarations(contents);
+        this.sender.callback(edited, callbackId);
     }
 
     locateContent(stackFrame) {
@@ -271,23 +277,14 @@ export default class PromptoWorker extends Mirror {
             this.publishLibraries(complete);
     }
 
-    prepareCommit() {
-        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const declarations = this.$repo.prepareCommit();
-        this.sender.callback(declarations, callbackId);
-    }
-
-    commitFailed() {
-        // keep state as is
-    }
-
-    commitSuccessfull() {
+    markChangesCommitted() {
         this.fetchModuleDeclarations(this.$projectId, response => {
             if (response.error)
                 ; // TODO something
             else {
                 const cursor = response.data.value;
-                this.$repo.registerCommitted(cursor.items);
+                this.$repo.markChangesCommitted(cursor.items);
+                this.$repo.clearDeleted();
              }
         });
     }

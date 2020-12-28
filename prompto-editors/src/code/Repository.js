@@ -189,7 +189,10 @@ export default class Repository {
             } else {
                 decl_obj = {
                     name: decl.name,
-                    version: "0.0.1",
+                    version: {
+                        type: "Version",
+                        value: "0.0.1"
+                    },
                     dialect: dialect,
                     body: decl.fetchBody(parser),
                     module: {
@@ -227,14 +230,12 @@ export default class Repository {
     }
 
 
-    registerCommitted(storedDecls) {
-        var repo = this;
+    markChangesCommitted(storedDecls) {
         storedDecls.forEach(storedDecl => {
-            var id = repo.idFromDbDecl(storedDecl);
-            repo.statuses[id].stuff.value.dbId = storedDecl.value.dbId;
-            repo.statuses[id].editStatus = "CLEAN";
-        });
-        this.clearDeleted();
+            const id = this.idFromDbDecl(storedDecl);
+            this.statuses[id].stuff.value.dbId = storedDecl.value.dbId;
+            this.statuses[id].editStatus = "CLEAN";
+        }, this);
     }
 
     clearDeleted() {
@@ -243,22 +244,18 @@ export default class Repository {
             if (this.statuses.hasOwnProperty(id) && this.statuses[id].editStatus === "DELETED")
                 deleted.push(id);
         }
-        deleted.forEach(id=>{
+        deleted.forEach(id => {
             delete this.statuses[id];
         }, this);
     }
 
 
-    prepareCommit() {
-        var edited = [];
-        for (var id in this.statuses) {
-            if (this.statuses.hasOwnProperty(id) && this.statuses[id].editStatus !== "CLEAN")
-                edited.push({type: "EditedStuff", value: this.statuses[id]});
-        }
-        if (edited.length)
-            return edited;
-        else
-            return null;
+    getEditedDeclarations(contents) {
+        return contents.map( content => {
+            const id = this.idFromContent(content);
+            const status = this.statuses[id];
+            return {type: "EditedStuff", value: status};
+        }, this);
     }
 
 
@@ -268,7 +265,7 @@ export default class Repository {
 
 
     handleDestroyed(content) {
-        var id = this.idFromContent(content);
+        const id = this.idFromContent(content);
         this.registerDestroyed(id);
         var obj_status = this.statuses[id];
         if (obj_status && obj_status.editStatus === "DELETED") {
