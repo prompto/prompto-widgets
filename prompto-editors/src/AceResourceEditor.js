@@ -27,13 +27,21 @@ export default class AceResourceEditor extends React.Component {
     }
 
     componentDidMount() {
-        if(this.props.commitAndReset) {
-            const editor = this.refs.AceEditor.editor;
+        this.installCommitShortcut();
+    }
+
+    getEditor() {
+        return this.refs.AceEditor.editor;
+    }
+
+    installCommitShortcut() {
+        if(this.props.quickCommit) {
+            const editor = this.getEditor();
             editor.commands.addCommand({
                 name: "commit",
                 bindKey: {win: "Ctrl-S", mac: "Command-S"},
                 exec: ()=>{
-                    this.props.commitAndReset();
+                    this.props.quickCommit();
                     return true;
                 }
             });
@@ -63,7 +71,7 @@ export default class AceResourceEditor extends React.Component {
 
     doSetResource(resource, readOnly) {
         const mimeType = this.readMimeType(resource);
-        const editor = this.refs.AceEditor.editor;
+        const editor = this.getEditor();
         const session = editor.getSession();
         const oldModeId = this.readModeId(this.state.mimeType);
         const newModeId = this.readModeId(mimeType);

@@ -29,13 +29,17 @@ export default class AcePromptoEditor extends React.Component {
         const session = this.getSession();
         session.setMode(new PromptoMode(this));
         // session.setUseWorker(true);
-        if(this.props.commitAndReset) {
+        this.installCommitShortcut();
+    }
+
+    installCommitShortcut() {
+        if(this.props.quickCommit) {
             const editor = this.getEditor();
             editor.commands.addCommand({
                 name: "commit",
                 bindKey: {win: "Ctrl-S", mac: "Command-S"},
                 exec: ()=>{
-                    this.props.commitAndReset();
+                    this.props.quickCommit();
                     return true;
                 }
             });
