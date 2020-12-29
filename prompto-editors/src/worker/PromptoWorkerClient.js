@@ -2,7 +2,7 @@
 import PromptoWorkerThread from "worker-loader!./PromptoWorkerThread";
 import PromptoChangeManager from "./PromptoChangeManager";
 // import { print } from '../utils/Utils';
-// import PromptoMarker from "./PromptoMarker";
+import PromptoMarker from "./PromptoMarker.js";
 
 export default class PromptoWorkerClient extends window.ace.acequire("ace/worker/worker_client")
     .WorkerClient {
@@ -80,9 +80,9 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
     }
 
     createMarkers(data) {
-        // const markers = PromptoMarker.compute(data);
-        // const session = this.getSession();
-        // markers.forEach(marker => session.addMarker(marker, "ace_" + marker.type + "-word", "text", true));
+        const markers = PromptoMarker.compute(data);
+        const session = this.getSession();
+        markers.forEach(marker => session.addMarker(marker, "ace_" + marker.type + "-word", "text", true));
     }
 
     onTerminate() {
