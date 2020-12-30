@@ -31,7 +31,8 @@ export default class PromptoMarker extends Range {
             const idx = merged.indexOf(mergeable[0]);
             const old = merged.splice(idx, 1)[0];
             const extended = old.extend(this.start.row, this.start.column).extend(this.end.row, this.end.column);
-            extended.type = (this.type !== extended.type) ? "error" : "warning";
+            if(this.type !== extended.type)
+                extended.type = "error";
             extended.mergeInto(merged);
         }
     }
