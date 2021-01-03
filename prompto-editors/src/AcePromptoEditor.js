@@ -3,6 +3,7 @@ import AceEditor from "react-ace";
 /*eslint-disable no-alert, no-console */
 import "ace-builds/src-noconflict/theme-eclipse";
 import "ace-builds/src-noconflict/mode-text";
+import "ace-builds/src-noconflict/ext-searchbox";
 import PromptoMode from "./mode/PromptoMode";
 
 export default class AcePromptoEditor extends React.Component {

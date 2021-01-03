@@ -10,6 +10,7 @@ import 'ace-builds/src-noconflict/mode-css';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-jsx';
+import "ace-builds/src-noconflict/ext-searchbox";
 import "./AceWebpackResolver.js"
 
 
