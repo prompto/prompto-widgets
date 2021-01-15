@@ -40,7 +40,7 @@ export default class AcePromptoEditor extends React.Component {
                 name: "commit",
                 bindKey: {win: "Ctrl-S", mac: "Command-S"},
                 exec: ()=>{
-                    this.props.quickCommit();
+                    this.props.onCommit();
                     return true;
                 }
             });
