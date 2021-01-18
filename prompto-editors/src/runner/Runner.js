@@ -1,10 +1,10 @@
 export default class Runner {
 
-    runContent(projectId, repo, content, callback) {
+    runMethod(projectId, repo, methodRef, callback) {
         throw new Error("Unsupported!");
     }
 
-    startDebugContent(root, projectId, repo, content, callback) {
+    runTest(projectId, repo, testRef, callback) {
         throw new Error("Unsupported!");
     }
 

@@ -10,7 +10,6 @@ export default class AcePromptoEditor extends React.Component {
 
     constructor(props) {
         super(props);
-        this.projectId = null;
         this.state = {newContent: null};
     }
 
@@ -57,18 +56,18 @@ export default class AcePromptoEditor extends React.Component {
     }
 
 
-    setProject(dbId, loadDependencies) {
+    setProject(dbId, loadDependencies, progressed) {
         this.projectId = dbId;
-        this.getSession().getMode().setProject(dbId, loadDependencies);
+        this.getSession().getMode().setProject(dbId, loadDependencies, progressed);
     }
 
     setDialect(dialect) {
         this.getSession().getMode().setDialect(dialect);
     }
 
-    catalogLoaded(catalog) {
+    catalogLoaded(catalog, completed) {
         if(this.props.catalogLoaded)
-            this.props.catalogLoaded(catalog);
+            this.props.catalogLoaded(catalog, completed);
         else
             console.log("Missing property: catalogLoaded");
     }
@@ -86,13 +85,6 @@ export default class AcePromptoEditor extends React.Component {
             this.props.bodyEdited(content);
         else
             console.log("Missing property: bodyEdited");
-    }
-
-    progressed(message) {
-        if(this.props.progressed)
-            this.props.progressed(message);
-        else
-            console.log(message);
     }
 
     setBody(body, readOnly) {
@@ -155,6 +147,16 @@ export default class AcePromptoEditor extends React.Component {
     markChangesCommitted() {
         const mode = this.getMode();
         mode.markChangesCommitted();
+    }
+
+    runMethod(methodRef, progressed, done) {
+        const mode = this.getMode();
+        mode.runMethod(methodRef, progressed, done);
+    }
+
+    runTest(testRef, progressed, done) {
+        const mode = this.getMode();
+        mode.runTest(testRef, progressed, done);
     }
 
 }

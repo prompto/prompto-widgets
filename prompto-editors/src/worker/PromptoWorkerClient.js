@@ -104,8 +104,9 @@ export default class PromptoWorkerClient extends window.ace.acequire("ace/worker
     }
 
     onCatalogLoaded(v) {
-        const catalog = window.readJSONValue(v.data);
-        this.getSession().getMode().onCatalogLoaded(catalog);
+        const catalog = window.readJSONValue(v.data[0]);
+        const complete = window.readJSONValue(v.data[1]);
+        this.getSession().getMode().onCatalogLoaded(catalog, complete);
     }
 
     onCatalogUpdated(v) {

@@ -2,12 +2,11 @@ import Mirror from '../ace/Mirror';
 import Repository from '../code/Repository';
 import Defaults from '../code/Defaults';
 import Fetcher from '../utils/Fetcher';
-import LocalRunners from "../runner/LocalRunners";
+import LocalInterpreter from "../runner/LocalInterpreter";
 import {convertObjectToDocument} from "../code/CodeUtils";
 
 // eslint-disable-next-line
 const globals = self || window;
-const prompto = globals.prompto;
 
 export default class PromptoWorker extends Mirror {
 
@@ -23,6 +22,7 @@ export default class PromptoWorker extends Mirror {
         this.onInit();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     onInit() {
         this.markLoading("Project");
         // fake 'library' to ensure libraries are published only once dependencies are loaded
@@ -30,11 +30,26 @@ export default class PromptoWorker extends Mirror {
         this.loadCore();
     }
 
+    // noinspection JSUnusedGlobalSymbols
+    onUpdate() {
+        const value = this.doc.getValue();
+        let problems = this.handleSetContent(value);
+        if (problems == null)
+            problems = this.handleEditContent(value);
+        this.$value = value;
+        // changing the below requires evolving PromptoChangeManager
+        this.sender.emit("annotate", problems);
+    }
+
+    progress(text) {
+        this.sender.emit("progressed", text);
+    }
+
     loadCore() {
         this.markLoading("Core");
-        this.sender.emit("progressed", "Fetching Core code");
+        this.progress( "Fetching Core code");
         Fetcher.instance.getTEXT("prompto/prompto.pec", null, text => {
-            this.sender.emit("progressed", "Loading Core code");
+            this.progress("Loading Core code");
             this.$repo.registerLibraryCode(text, "E");
             this.markLoaded("Core");
         });
@@ -52,16 +67,6 @@ export default class PromptoWorker extends Mirror {
             this.$value = null; // next update will be setting the value
             this.$repo.reset();
         }
-    }
-
-    onUpdate() {
-        const value = this.doc.getValue();
-        let problems = this.handleSetContent(value);
-        if (problems == null)
-            problems = this.handleEditContent(value);
-        this.$value = value;
-        // changing the below requires evolving PromptoChangeManager
-        this.sender.emit("annotate", problems);
     }
 
     handleSetContent(value) {
@@ -90,10 +95,10 @@ export default class PromptoWorker extends Mirror {
     }
 
     setDialect(dialect) {
-        var old = this.$dialect;
+        const old = this.$dialect;
         this.$dialect = dialect;
         if(old && dialect!==old) {
-            var value = this.doc.getValue();
+            const value = this.doc.getValue();
             if(value) {
                 // remember value since it does not result from an edit
                 this.$value = this.$repo.translate(value, old, dialect);
@@ -114,18 +119,21 @@ export default class PromptoWorker extends Mirror {
         this.sender.callback(edited, callbackId);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     locateContent(stackFrame) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         const content = this.$repo.locateContent(stackFrame);
         this.sender.callback(content, callbackId);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     locateSection(breakpoint) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         const section = this.$repo.locateSection(breakpoint);
         this.sender.callback(section, callbackId);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     destroyContent(content) {
         this.$value = "";
         const delta = this.$repo.handleDestroyed(content);
@@ -136,17 +144,17 @@ export default class PromptoWorker extends Mirror {
         this.sender.emit("value", this.$value);
     }
 
-
     loadProject(loadDependencies) {
-        this.sender.emit("progressed", "Fetching project description");
-        this.fetchProjectDescription(this.$projectId, true, response => {
+        this.progress("Fetching project description");
+        PromptoWorker.fetchProjectDescription(this.$projectId, true, response => {
             if (response.error)
-                ; // TODO something
+                this.handleError(response.error);
             else {
-                this.sender.emit("progressed", "Fetching project description complete");
+                this.progress( "Fetching project description complete");
                 this.$project = response.data.value;
                 if (loadDependencies)
                     this.loadDependencies();
+                // noinspection JSUnresolvedVariable
                 if (this.$project.stubResource) try {
                     // resource location is absolute
                     globals.importScripts("/stub?moduleId=" + this.$project.dbId + "&resourceName=" + this.$project.stubResource);
@@ -156,12 +164,12 @@ export default class PromptoWorker extends Mirror {
                     console.error(trace);
                 }
                 this.markLoaded("%Description%");
-                this.sender.emit("progressed", "Fetching project code");
-                this.fetchModuleDeclarations(this.$projectId, response => {
+                this.progress("Fetching project code");
+                PromptoWorker.fetchModuleDeclarations(this.$projectId, response => {
                     if (response.error)
-                        ; // TODO something
+                        this.handleError(response.error);
                     else {
-                        this.sender.emit("progressed", "Parsing project code");
+                        this.progress( "Parsing project code");
                         const cursor = response.data.value;
                         this.$repo.registerProjectDeclarations(this.$projectId, cursor.items);
                         this.markLoaded("Project");
@@ -182,11 +190,12 @@ export default class PromptoWorker extends Mirror {
 
     loadDependency(dependency) {
         this.markLoading(dependency.name);
-        this.fetchModuleDescription(dependency.name, dependency.version, response => {
+        PromptoWorker.fetchModuleDescription(dependency.name, dependency.version, response => {
             if(response.error)
-                ; // TODO something
+                this.handleError(response.error);
             else {
                 const library = response.data.value;
+                // noinspection JSUnresolvedVariable
                 if(library.stubResource) {
                     try {
                         // resource location is absolute
@@ -197,12 +206,12 @@ export default class PromptoWorker extends Mirror {
                         console.error(trace);
                     }
                 }
-                this.sender.emit("progressed", "Fetching " + dependency.name + " code");
-                this.fetchModuleDeclarations(library.dbId, response => {
+                this.progress( "Fetching " + dependency.name + " code");
+                PromptoWorker.fetchModuleDeclarations(library.dbId, response => {
                     if (response.error)
-                        ; // TODO something
+                        this.handleError(response.error);
                     else {
-                        this.sender.emit("progressed", "Parsing " + dependency.name + " code");
+                        this.progress( "Parsing " + dependency.name + " code");
                         const cursor = response.data.value;
                         this.$repo.registerLibraryDeclarations(cursor.items);
                         this.markLoaded(dependency.name);
@@ -212,6 +221,12 @@ export default class PromptoWorker extends Mirror {
         });
     }
 
+    handleError(error) {
+        // TODO
+    }
+
+    // TODO reconnect this stuff
+    // noinspection JSUnusedGlobalSymbols
     dependenciesUpdated() {
         this.$repo.clearLibrariesContext();
         this.markLoading("Project");
@@ -221,19 +236,19 @@ export default class PromptoWorker extends Mirror {
         this.loadProject(true);
     }
 
-    fetchProjectDescription(projectId, register, success) {
+    static fetchProjectDescription(projectId, register, success) {
         const params = [ {name:"dbId", value:projectId.toString()}, {name:"register", type:"Boolean", value:register}];
         const url = '/ws/run/fetchModuleDescription';
         Fetcher.instance.getJSON(url, { params: JSON.stringify(params) }, success);
     }
 
-    fetchModuleDescription(name, version, success) {
+    static fetchModuleDescription(name, version, success) {
         const params = [ {name:"name", type:"Text", value:name}, {name:"version", type:version.type, value:version.value}, {name:"register", type:"Boolean", value:false} ];
         const url = '/ws/run/fetchModuleDescription';
         Fetcher.instance.getJSON(url, { params: JSON.stringify(params) }, success);
     }
 
-    fetchModuleDeclarations(moduleId, success) {
+    static fetchModuleDeclarations(moduleId, success) {
         const params = [ {name:"dbId", value:moduleId.toString()}];
         const url = '/ws/run/fetchModuleDeclarations';
         Fetcher.instance.getJSON(url, { params: JSON.stringify(params) }, success);
@@ -241,20 +256,18 @@ export default class PromptoWorker extends Mirror {
 
 
     publishLibraries(complete) {
-        var catalog = this.$repo.publishLibraries();
-        catalog.value.complete = complete;
-        this.sender.emit("catalogLoaded", catalog);
+        const catalog = this.$repo.publishLibraries();
+        this.sender.emit("catalogLoaded", [ catalog, complete ]);
     }
 
     publishProject(complete) {
-        var catalog = this.$repo.publishProject();
-        catalog.value.complete = complete;
-        this.sender.emit("catalogLoaded", catalog);
+        const catalog = this.$repo.publishProject();
+        this.sender.emit("catalogLoaded", [ catalog, complete ]);
     }
 
     unpublishProject() {
-        var catalog = this.$repo.unpublishProject();
-        this.sender.emit("catalogLoaded", catalog);
+        const catalog = this.$repo.unpublishProject();
+        this.sender.emit("catalogLoaded", [ catalog, false ]);
     }
 
     markLoading(name) {
@@ -263,7 +276,7 @@ export default class PromptoWorker extends Mirror {
 
     markLoaded (name) {
         if(name !== "%Description%")
-            this.sender.emit("progressed", "Loading " + name + " complete");
+            this.progress( "Loading " + name + " complete");
         delete this.$loading[name];
         const complete = Object.keys(this.$loading).length === 0;
         // is this the Project ?
@@ -278,9 +291,9 @@ export default class PromptoWorker extends Mirror {
     }
 
     markChangesCommitted() {
-        this.fetchModuleDeclarations(this.$projectId, response => {
+        PromptoWorker.fetchModuleDeclarations(this.$projectId, response => {
             if (response.error)
-                ; // TODO something
+                this.handleError(response.error);
             else {
                 const cursor = response.data.value;
                 this.$repo.markChangesCommitted(cursor.items);
@@ -289,31 +302,30 @@ export default class PromptoWorker extends Mirror {
         });
     }
 
-    runTestOrMethod(content, mode) {
+    runMethod(methodRef) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const runner = LocalRunners.forMode(mode);
-        if(runner)
-            runner.runContent(this.$projectId, this.$repo, content, ()=>this.sender.callback(null, callbackId));
-        else {
-            console.log("Unsupported mode: " + mode);
-            this.sender.callback(null, callbackId);
+        const oldLog = console.log;
+        console.log = this.progress.bind(this);
+        const runner = new LocalInterpreter();
+        try {
+            runner.runMethod(this.$repo, methodRef, () => this.sender.callback(null, callbackId));
+        } finally {
+            console.log = oldLog;
+        }
+
+    }
+
+    runTest(testRef) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const oldLog = console.log;
+        console.log = this.progress.bind(this);
+        const runner = new LocalInterpreter();
+        try {
+            runner.runTest(this.$repo, testRef, () => this.sender.callback(null, callbackId));
+        } finally {
+            console.log = oldLog;
         }
     }
 
 
-    fetchRunnablePage(content) {
-        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        var runnable = { valid: false, content: null };
-        var decl = this.$repo.getDeclaration(content);
-        if(decl!==null && decl.annotations && decl instanceof prompto.declaration.ConcreteWidgetDeclaration) {
-            var annotations = decl.annotations.filter(function(a) { return a.id.name==="@PageWidgetOf" });
-            if(annotations.length>0) {
-                var expression = annotations[0].getDefaultArgument();
-                if (expression instanceof prompto.literal.TextLiteral) {
-                    runnable = {valid: true, content: {type: "page", name: expression.value.toString()}};
-                }
-            }
-        }
-        this.sender.callback(runnable, callbackId);
-    }
 }

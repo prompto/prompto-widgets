@@ -15,9 +15,11 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$dialect = Defaults.dialect;
         this.HighlightRules = PromptoHighlightRules;
         this.$behaviour = new PromptoBehaviour();
+        this.$progressed = text => {};
     }
 
-    setProject(dbId, loadDependencies) {
+    setProject(dbId, loadDependencies, progressed) {
+        this.$progressed = progressed;
         this.$worker && this.$worker.send("setProject", [ dbId, loadDependencies ] );
     }
 
@@ -26,7 +28,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.setDialect(dialect);
     }
 
-    resourceToContent(resource) {
+    static resourceToContent(resource) {
         if(resource !== null) {
             const type = resource.$categories[resource.$categories.length - 1].name;
             return {type: type, name: resource.name, prototype: resource.prototype || null};
@@ -35,12 +37,12 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     }
 
     getResourceBody(resource, callback) {
-        const content = this.resourceToContent(resource);
+        const content = PromptoMode.resourceToContent(resource);
         this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
     }
 
     setResource(resource, clearValue) {
-        const content = this.resourceToContent(resource);
+        const content = PromptoMode.resourceToContent(resource);
         this.$worker && this.$worker.send("setContent", [ content, clearValue ] );
     }
 
@@ -54,12 +56,12 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     }
 
     destroyResource(resource) {
-        const content = this.resourceToContent(resource);
+        const content = PromptoMode.resourceToContent(resource);
         this.$worker && this.$worker.send("destroyContent", [ content ] );
     }
 
     getEditedResources(resources, callback) {
-        const contents = resources.map(edited => this.resourceToContent(edited.stuff), this);
+        const contents = resources.map(edited => PromptoMode.resourceToContent(edited.stuff), this);
         this.$worker && this.$worker.call("getEditedContents", [ contents ], callback);
     }
 
@@ -67,16 +69,22 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.send("markChangesCommitted", [ ] );
     }
 
-    runTestOrMethod(id, mode, callback) {
-        this.$worker && this.$worker.call("runTestOrMethod", [ id, mode ], callback );
+    runMethod(methodRef, progressed, done) {
+        this.$progressed = progressed;
+        const content = PromptoMode.resourceToContent(methodRef);
+        this.$worker && this.$worker.call("runMethod", [ content ], () => {
+            this.$progressed = text => {};
+            done();
+        });
     }
 
-    debugMethod(id, mode) {
-        this.$worker && this.$worker.send("debugMethod", [ id, mode ] );
-    }
-
-    fetchRunnablePage(content, callback) {
-        this.$worker && this.$worker.call("fetchRunnablePage", [ content ], callback );
+    runTest(testRef, progressed, done) {
+        this.$progressed = progressed;
+        const content = PromptoMode.resourceToContent(testRef);
+        this.$worker && this.$worker.call("runTest", [ content ], () => {
+            this.$progressed = text => {};
+            done();
+        });
     }
 
     createWorker(session) {
@@ -87,18 +95,20 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     // a utility method to inspect worker data in Firefox/Safari
     inspect = function(name) {
         this.$worker && this.$worker.send("inspect", [ name ] );
-    }
+    };
 
     dependenciesUpdated() {
         this.$worker && this.$worker.send("dependenciesUpdated", [] );
     }
 
     onProgressed(message) {
-        this.$editor.progressed(message);
+        this.$progressed(message);
     }
 
-    onCatalogLoaded(catalog) {
-        this.$editor.catalogLoaded(catalog);
+    onCatalogLoaded(catalog, completed) {
+        this.$editor.catalogLoaded(catalog, completed);
+        if(completed)
+            this.$progressed = text => {};
     }
 
     onCatalogUpdated(catalog) {
