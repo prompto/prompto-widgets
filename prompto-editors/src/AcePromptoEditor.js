@@ -133,14 +133,16 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     convertStuffToMutated(edited) {
-        const stuff = edited.stuff;
-        stuff.$mutable = true;
-        const category = stuff.$storable.category;
-        stuff.$storable = window.$DataStore.instance.newStorableDocument(category, stuff.dbIdListener.bind(stuff));
-        stuff.getAttributeNames().forEach(name => {
-            const isEnum = stuff[name] && stuff[name].name && stuff[name].name === stuff[name].value;
-            stuff.setMember(name, stuff[name], true, true, isEnum);
-        });
+        if(edited.stuff) {
+            const stuff = edited.stuff;
+            stuff.$mutable = true;
+            const category = stuff.$storable.category;
+            stuff.$storable = window.$DataStore.instance.newStorableDocument(category, stuff.dbIdListener.bind(stuff));
+            stuff.getAttributeNames().forEach(name => {
+                const isEnum = stuff[name] && stuff[name].name && stuff[name].name === stuff[name].value;
+                stuff.setMember(name, stuff[name], true, true, isEnum);
+            });
+        }
         return edited;
     }
 
