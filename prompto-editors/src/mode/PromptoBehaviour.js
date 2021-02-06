@@ -1,14 +1,15 @@
-var context = null;
-let contextCache = {};
+let context = null;
+let contextCaches = {};
 
 function initContext(editor) {
-    var id = -1;
+    let id = -1;
+    // noinspection JSUnresolvedVariable
     if (editor.multiSelect) {
         id = editor.selection.index;
-        if (contextCache.rangeCount !== editor.multiSelect.rangeCount)
-            contextCache = {rangeCount: editor.multiSelect.rangeCount};
+        if (contextCaches.rangeCount !== editor.multiSelect.rangeCount)
+            contextCaches = {rangeCount: editor.multiSelect.rangeCount};
     }
-    context = contextCache[id];
+    context = contextCaches[id];
     if(!context)
         context = {
             autoInsertedClosings: 0,
@@ -19,12 +20,12 @@ function initContext(editor) {
             maybeInsertedLineStart: "",
             maybeInsertedLineEnd: "" */
         };
-    contextCache[id] = context;
+    contextCaches[id] = context;
     return context;
  }
 
 function getWrapped(selection, selected, opening, closing) {
-    var rowDiff = selection.end.row - selection.start.row;
+    const rowDiff = selection.end.row - selection.start.row;
     return {
         text: opening + selected + closing,
         selection: [
@@ -36,10 +37,32 @@ function getWrapped(selection, selected, opening, closing) {
     };
 }
 
+function getCharAt(editor, session, index) {
+    const cursor = editor.getCursorPosition();
+    const line = session.doc.getLine(cursor.row);
+    let column = cursor.column;
+    if(index === -1 ) {
+        let lastChar = line[--column];
+        while(lastChar===' ' && column > 0)
+            lastChar = line[--column];
+        return lastChar;
+    } else if(index > 0) {
+        let lastChar;
+        while(index-->0) {
+            lastChar = line[column];
+            while (lastChar === ' ' && column < line.length)
+                lastChar = line[++column];
+        }
+        return lastChar;
+    }
+}
+
+
 const LEFT_RIGHT = {'"' : '"', "'" : "'", '(' : ')', '{' : '}', '[' : ']'};
 const RIGHT_LEFT = {'"' : '"', "'" : "'", ')' : '(', '}' : '{', ']' : '['};
 
-export default class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behaviour {
+export default // noinspection JSUnresolvedVariable
+class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behaviour {
 
     constructor(options) {
         super(options);
@@ -49,23 +72,30 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
         this.add("tag", "insertion", this.onTagInsertion.bind(this));
     }
 
+    // noinspection JSMethodCanBeStatic
     onNewLineInsertion(state, action, editor, session, text) {
         if(text==='\n') {
             const tabString = session.getTabString();
             const cursor = editor.getCursorPosition();
             const line = session.doc.getLine(cursor.row);
             const indent = line.match(/^\s*/)[0];
-            let column = cursor.column;
-            let lastChar = line[--column];
-            while(lastChar===' ' && column > 0)
-                lastChar = line[--column];
+            const lastChar = getCharAt(editor, session, -1);
             const dialect = session.getMode().$dialect;
             if(dialect==="O" && lastChar==='{') {
-                const start = (indent + tabString).length;
-                return {
-                    text: text + indent + tabString + text + indent,
-                    selection: [1, start, 1, start]
-                };
+                const nextChar = getCharAt(editor, session, +1);
+                if(nextChar==="}") {
+                    const start = (indent + tabString).length;
+                    return {
+                        text: text + indent + tabString + text + indent,
+                        selection: [1, start, 1, start]
+                    };
+                } else {
+                    const start = (indent + tabString).length;
+                    return {
+                        text: text + indent + tabString,
+                        selection: [1, start, 1, start]
+                    };
+                }
             } else if(dialect!=="O" && lastChar===':') {
                 const start = (indent + tabString).length;
                 return {
@@ -73,8 +103,9 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
                     selection: [1, start, 1, start]
                 };
             } else  {
-                const chars = line.substring(cursor.column - 1, cursor.column + 2);
-                if(chars==='></') {
+                const nextChar = getCharAt(editor, session, +1);
+                const nextNextChar = getCharAt(editor, session, +2);
+                if(lastChar + nextChar + nextNextChar === '></') {
                     const start = (indent + tabString).length;
                     return {
                         text: text + indent + tabString + text + indent,
@@ -88,8 +119,8 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
     onEnclosingInsertion(state, action, editor, session, text) {
         if (LEFT_RIGHT[text]) {
             initContext(editor);
-            var selection = editor.getSelectionRange();
-            var selected = session.doc.getTextRange(selection);
+            const selection = editor.getSelectionRange();
+            const selected = session.doc.getTextRange(selection);
             if (selected !== "" && editor.getWrapBehavioursEnabled()) {
                 return getWrapped(selection, selected, text, LEFT_RIGHT[text]);
             } else if (this.isSaneInsertion(editor, session)) {
@@ -105,7 +136,8 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
             const line = session.doc.getLine(cursor.row);
             const rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar === text) {
-                var matching = session.$findOpeningBracket(text, {column: cursor.column + 1, row: cursor.row});
+                // noinspection JSUnresolvedFunction
+                const matching = session.$findOpeningBracket(text, {column: cursor.column + 1, row: cursor.row});
                 if (matching !== null && this.isAutoInsertedClosing(cursor, line, text)) {
                     this.popAutoInsertedClosing();
                     return {
@@ -117,12 +149,13 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
         }
     }
 
+    // noinspection JSMethodCanBeStatic
     onEnclosingDeletion(state, action, editor, session, range) {
-        var selected = session.doc.getTextRange(range);
+        const selected = session.doc.getTextRange(range);
         if (!range.isMultiLine() && LEFT_RIGHT[selected]) {
             initContext(editor);
-            var line = session.doc.getLine(range.start.row);
-            var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+            const line = session.doc.getLine(range.start.row);
+            const rightChar = line.substring(range.start.column + 1, range.start.column + 2);
             if (rightChar === LEFT_RIGHT[selected]) {
                 range.end.column++;
                 return range;
@@ -130,6 +163,7 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
         }
     }
 
+    // noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
     isSaneInsertion(editor, session) {
         return true;
         /*
@@ -152,6 +186,7 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
         context.autoInsertedClosings++;
     }
 
+    // noinspection JSMethodCanBeStatic
     isAutoInsertedClosing(cursor, line, closing) {
         return context.autoInsertedClosings > 0 &&
             cursor.row === context.autoInsertedRow &&
@@ -159,11 +194,13 @@ export default class PromptoBehaviour extends window.ace.acequire("ace/mode/beha
             line.substr(cursor.column) === context.autoInsertedLineEnd;
     }
 
+    // noinspection JSMethodCanBeStatic
     popAutoInsertedClosing() {
         context.autoInsertedLineEnd = context.autoInsertedLineEnd.substr(1);
         context.autoInsertedClosings--;
     }
 
+    // noinspection JSMethodCanBeStatic
     onTagInsertion(state, action, editor, session, text) {
         if(text==='>') {
             const cursor = editor.getCursorPosition();
