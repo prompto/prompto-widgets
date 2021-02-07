@@ -26,7 +26,7 @@ function clearws(text) {
 
 test.skip('code is loaded', () => {
     global.Event = function () {}; // referred by web stuff
-    var code = loadText("../../../src/web/public/prompto/prompto.pec");
+    var code = loadText("../../../src/main/resources/prompto/prompto.pec");
     var repo = new Repository();
     repo.registerLibraryCode(code, "E");
     expect(repo.librariesContext).not.toBeNull();
