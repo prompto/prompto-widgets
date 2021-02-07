@@ -82,11 +82,15 @@ export default class Repository {
         return delta;
     }
 
-    registerProjectDeclarations(moduleId, declarations) {
+    registerProjectDeclarations(moduleId, declarations, progress) {
+        const totalCount = declarations.length;
+        let actualCount = 0;
         this.moduleId = moduleId;
         declarations.forEach(obj => {
             var decl = parse(obj.value.body, obj.value.dialect);
             decl.register(this.projectContext);
+            if(progress)
+                progress("Parsing project code " + (++actualCount) + "/" + totalCount);
             // prepare for commit
             var module = obj.value.module;
             if (module) {
@@ -100,7 +104,7 @@ export default class Repository {
 
     getDeclarationBody(content, dialect) {
         var decl = this.getDeclaration(content);
-        if(decl.sourceCode && decl.sourceCode.dialect == dialect)
+        if(decl.sourceCode && decl.sourceCode.dialect === dialect)
             return decl.sourceCode.body;
         else
             return unparse(this.projectContext, decl, dialect);

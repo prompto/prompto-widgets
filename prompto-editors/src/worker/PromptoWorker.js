@@ -48,7 +48,7 @@ export default class PromptoWorker extends Mirror {
     loadCore() {
         this.markLoading("Core");
         this.progress( "Fetching Core code");
-        Fetcher.instance.getTEXT("prompto/prompto.pec", null, text => {
+        Fetcher.instance.getTEXT("/prompto/prompto.pec", null, text => {
             this.progress("Loading Core code");
             this.$repo.registerLibraryCode(text, "E");
             this.markLoaded("Core");
@@ -171,7 +171,7 @@ export default class PromptoWorker extends Mirror {
                     else {
                         this.progress( "Parsing project code");
                         const cursor = response.data.value;
-                        this.$repo.registerProjectDeclarations(this.$projectId, cursor.items);
+                        this.$repo.registerProjectDeclarations(this.$projectId, cursor.items, this.progress.bind(this));
                         this.markLoaded("Project");
                     }
                 });
