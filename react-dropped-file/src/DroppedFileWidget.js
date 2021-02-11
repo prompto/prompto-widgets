@@ -10,7 +10,7 @@ function loadFileRef() {
         FileRef = window.FileRef;
     } else if(window.require) {
         try {
-            const module = window.require('/prompto/internet/FileRef.js', null, null, m => ({id: m, uri: m}));
+            const module = window.require('/prompto/web/FileRef.js', null, null, m => ({id: m, uri: m}));
             FileRef = module.FileRef;
         } catch(error) {
         }
