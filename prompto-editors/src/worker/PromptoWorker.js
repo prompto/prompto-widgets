@@ -120,16 +120,16 @@ export default class PromptoWorker extends Mirror {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    locateContent(stackFrame) {
+    contentForStackFrame(stackFrame) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const content = this.$repo.locateContent(stackFrame);
+        const content = this.$repo.contentForStackFrame(stackFrame);
         this.sender.callback(content, callbackId);
     }
 
     // noinspection JSUnusedGlobalSymbols
-    locateSection(breakpoint) {
+    contentForSection(breakpoint) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const section = this.$repo.locateSection(breakpoint);
+        const section = this.$repo.contentForSection(breakpoint);
         this.sender.callback(section, callbackId);
     }
 

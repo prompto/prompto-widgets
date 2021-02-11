@@ -477,55 +477,54 @@ export default class Repository {
         }
     }
 
-    locateContent(stackFrame) {
+    contentForStackFrame(stackFrame) {
         if (stackFrame.categoryName && stackFrame.categoryName.length)
-            return this.locateCategoryContent(stackFrame);
+            return this.categoryForStackFrame(stackFrame);
         else
-            return this.locateMethodContent(stackFrame);
+            return this.methodForStackFrame(stackFrame);
     }
 
-    locateCategoryContent(stackFrame) {
-        let decl = this.librariesContext.getRegisteredDeclaration(stackFrame.categoryName);
+    categoryForStackFrame(stackFrame) {
+        const decl = this.projectContext.getRegisteredDeclaration(stackFrame.categoryName);
         if(decl)
-            return {type: "Prompto", subType: this.subTypeFromDeclaration(decl), name: stackFrame.categoryName, core: true};
-        decl = this.projectContext.getRegisteredDeclaration(stackFrame.categoryName);
-        if(decl)
-            return { type: "Prompto", subType: this.subTypeFromDeclaration(decl), name: stackFrame.categoryName, core: false };
+            return { type: this.typeFromDeclaration(this.projectContext, decl), name: stackFrame.categoryName };
         else
             return null;
     }
 
-    subTypeFromDeclaration(decl) {
-        if (decl instanceof prompto.declaration.EnumeratedCategoryDeclaration || decl instanceof prompto.declaration.EnumeratedNativeDeclaration)
-            return "enumeration";
+    typeFromDeclaration(context, decl) {
+        if(decl instanceof prompto.declaration.BaseMethodDeclaration)
+            return "MethodRef";
+        else if(decl instanceof prompto.declaration.AttributeDeclaration)
+            return "AttributeRef";
+        else if(decl instanceof prompto.declaration.CategoryDeclaration) {
+            if(decl.isWidget(context))
+                return "WidgetRef";
+            else
+                return "CategoryRef";
+        } else if (decl instanceof prompto.declaration.EnumeratedCategoryDeclaration || decl instanceof prompto.declaration.EnumeratedNativeDeclaration)
+            return "EnumerationRef";
+        else if(decl instanceof prompto.declaration.TestMethodDeclaration)
+            return "TestRef";
         else
-            return "category";
+            return null; // TODO log
     }
 
 
-    locateMethodContent(stackFrame) {
-        let testMethod = this.librariesContext.getRegisteredTest(stackFrame.methodName);
-        if(testMethod)
-            return { type: "Prompto", subType: "test", name: stackFrame.methodName, core: true, main: false };
-        let methodsMap = this.librariesContext.getRegisteredDeclaration(stackFrame.methodName);
-        if(methodsMap) {
-            const method = stackFrame.methodProto ? methodsMap.protos[stackFrame.methodProto] : methodsMap.getFirst();
-            if(method)
-                return { type: "Prompto", subType: "method", name: stackFrame.methodName, proto: stackFrame.methodProto, core: true, main: method.isEligibleAsMain() };
+    methodForStackFrame(stackFrame) {
+        let decl = this.projectContext.getRegisteredTest(stackFrame.methodName);
+        if(!decl) {
+            const methodsMap = this.projectContext.getRegisteredDeclaration(stackFrame.methodName);
+            if(methodsMap)
+                decl = stackFrame.methodProto ? methodsMap.protos[stackFrame.methodProto] : methodsMap.getFirst();
         }
-        testMethod = this.projectContext.getRegisteredTest(stackFrame.methodName);
-        if(testMethod)
-            return { type: "Prompto", subType: "test", name: stackFrame.methodName, core: false, main: false };
-        methodsMap = this.projectContext.getRegisteredDeclaration(stackFrame.methodName);
-        if(methodsMap) {
-            const method = stackFrame.methodProto ? methodsMap.protos[stackFrame.methodProto] : methodsMap.getFirst();
-            if(method)
-                return { type: "Prompto", subType: "method", name: stackFrame.methodName, proto: stackFrame.methodProto, core: false, main: method.isEligibleAsMain() };
-        }
-        return null;
+        if(decl)
+            return { type: this.typeFromDeclaration(this.projectContext, decl), name: stackFrame.methodName, proto: stackFrame.methodProto || null };
+        else
+            return null;
     }
 
-    locateSection(breakpoint) {
+    contentForSection(breakpoint) {
         let declaration = null;
         if (breakpoint.type === "category")
             declaration = this.projectContext.getRegisteredDeclaration(breakpoint.name);
