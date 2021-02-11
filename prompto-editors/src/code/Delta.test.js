@@ -1,13 +1,7 @@
 import Delta from './Delta';
 import Catalog from './Catalog';
 
-beforeAll(()=>{
-    jest.requireActual("../../../../../../../prompto-javascript/JavaScript-Core/src/main");
-    const globals = global || window || self || this;
-    globals.antlr4 = antlr4;
-    globals.prompto = prompto;
-});
-
+const { prompto } = jest.requireActual("../../../../prompto-javascript/JavaScript-Core/src/main/index.js");
 
 it('filterOutDuplicates preserves added single proto', () => {
     var delta = new Delta();
