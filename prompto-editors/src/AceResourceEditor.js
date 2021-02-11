@@ -36,7 +36,7 @@ export default class AceResourceEditor extends React.Component {
     }
 
     installCommitShortcut() {
-        if(this.props.quickCommit) {
+        if(this.props.onCommit) {
             const editor = this.getEditor();
             editor.commands.addCommand({
                 name: "commit",
