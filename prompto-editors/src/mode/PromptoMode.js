@@ -5,6 +5,30 @@ import PromptoBehaviour from "./PromptoBehaviour";
 import Defaults from "../code/Defaults";
 import PromptoWorkerClient from "../worker/PromptoWorkerClient";
 
+function resourceToWorkerMessage(resource) {
+    if(resource !== null) {
+        // noinspection JSUnresolvedVariable
+        const type = resource.$categories[resource.$categories.length - 1].name;
+        const prototype = resource.prototype === undefined ? null : resource.prototype;
+        return {type: type, name: resource.name, prototype: prototype};
+    } else
+        return null;
+}
+
+function stackFrameToWorkerMessage(stackFrame) {
+    if(stackFrame !== null) {
+        const prototype = stackFrame.prototype === undefined ? null : stackFrame.prototype;
+        return { categoryName: stackFrame.categoryName, methodName: stackFrame.methodName, methodProto: prototype };
+    } else
+        return null;
+}
+
+// eslint-disable-next-line no-unused-vars
+function silentProgress(text) {
+}
+
+
+// noinspection JSUnresolvedVariable,JSUnusedGlobalSymbols
 export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     .Mode {
 
@@ -15,7 +39,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$dialect = Defaults.dialect;
         this.HighlightRules = PromptoHighlightRules;
         this.$behaviour = new PromptoBehaviour();
-        this.$progressed = text => {};
+        this.$progressed = silentProgress;
     }
 
     setProject(dbId, loadDependencies, progressed) {
@@ -28,40 +52,41 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.setDialect(dialect);
     }
 
-    static resourceToContent(resource) {
-        if(resource !== null) {
-            const type = resource.$categories[resource.$categories.length - 1].name;
-            return {type: type, name: resource.name, prototype: resource.prototype || null};
-        } else
-            return null;
+    getResourceBody(resource, callback) {
+        const content = resourceToWorkerMessage(resource);
+        this.getContentBody(content, callback);
     }
 
-    getResourceBody(resource, callback) {
-        const content = PromptoMode.resourceToContent(resource);
-        this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
+    getContentBody(content, callback) {
+            this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
     }
 
     setResource(resource, clearValue) {
-        const content = PromptoMode.resourceToContent(resource);
+        const content = resourceToWorkerMessage(resource);
+        this.setContent(content, clearValue);
+    }
+
+    setContent(content, clearValue) {
         this.$worker && this.$worker.send("setContent", [ content, clearValue ] );
     }
 
-    locateContent( stackFrame, callback) {
-        this.$worker && this.$worker.call("locateContent", [ stackFrame ], callback);
+    contentForStackFrame( stackFrame, callback) {
+        const message = stackFrameToWorkerMessage(stackFrame);
+        this.$worker && this.$worker.call("contentForStackFrame", [ message ], callback);
     }
 
 
-    locateSection( breakpoint, callback) {
-        this.$worker && this.$worker.call("locateSection", [ breakpoint ], callback);
+    contentForSection( breakpoint, callback) {
+        this.$worker && this.$worker.call("contentForSection", [ breakpoint ], callback);
     }
 
     destroyResource(resource) {
-        const content = PromptoMode.resourceToContent(resource);
+        const content = resourceToWorkerMessage(resource);
         this.$worker && this.$worker.send("destroyContent", [ content ] );
     }
 
     getEditedResources(resources, callback) {
-        const contents = resources.map(edited => PromptoMode.resourceToContent(edited.stuff), this);
+        const contents = resources.map(edited => resourceToWorkerMessage(edited.stuff), this);
         this.$worker && this.$worker.call("getEditedContents", [ contents ], callback);
     }
 
@@ -71,23 +96,23 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
 
     runMethod(methodRef, progressed, done) {
         this.$progressed = progressed;
-        const content = PromptoMode.resourceToContent(methodRef);
+        const content = resourceToWorkerMessage(methodRef);
         this.$worker && this.$worker.call("runMethod", [ content ], () => {
-            this.$progressed = text => {};
+            this.$progressed = silentProgress;
             done();
         });
     }
 
     runTest(testRef, progressed, done) {
         this.$progressed = progressed;
-        const content = PromptoMode.resourceToContent(testRef);
-        this.$worker && this.$worker.call("runTest", [ content ], () => {
-            this.$progressed = text => {};
+        const message = resourceToWorkerMessage(testRef);
+        this.$worker && this.$worker.call("runTest", [ message ], () => {
+            this.$progressed = silentProgress;
             done();
         });
     }
 
-    createWorker(session) {
+    createWorker() {
         this.$worker = new PromptoWorkerClient(this.$editor, Defaults.dialect);
         return this.$worker;
     }
@@ -108,7 +133,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     onCatalogLoaded(catalog, completed) {
         this.$editor.catalogLoaded(catalog, completed);
         if(completed)
-            this.$progressed = text => {};
+            this.$progressed = silentProgress;
     }
 
     onCatalogUpdated(catalog) {
