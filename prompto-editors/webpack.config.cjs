@@ -1,6 +1,7 @@
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
+// eslint-disable-next-line no-undef
 const target_dir = path.resolve(__dirname, "../../prompto-factory/CodeFactory/CodeFactory/src/main/resources/ide/");
 
 const terser_options = {
@@ -11,6 +12,7 @@ const terser_options = {
 };
 const terser_plugin = new TerserPlugin(terser_options);
 
+// eslint-disable-next-line no-undef
 module.exports = {
     entry: './src/ResourceEditors.js',
     output: {
