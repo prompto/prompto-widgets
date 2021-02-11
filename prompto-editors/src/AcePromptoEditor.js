@@ -6,11 +6,29 @@ import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/ext-searchbox";
 import PromptoMode from "./mode/PromptoMode";
 
+function enhanceEditSession() {
+    window.ace.EditSession.prototype.clearGutterDecorations = function () {
+        // noinspection JSUnusedGlobalSymbols
+        this.$decorations = [];
+        this._signal("changeBreakpoint", {});
+    };
+}
+
+
+// noinspection JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable,JSDeprecatedSymbols
 export default class AcePromptoEditor extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {newContent: null};
+        this.state = {newContent: null, debugStatus: null};
+        enhanceEditSession();
+    }
+
+    componentDidMount() {
+        const session = this.getSession();
+        session.setMode(new PromptoMode(this));
+        // session.setUseWorker(true);
+        this.installCommitShortcut();
     }
 
     getEditor() {
@@ -25,15 +43,8 @@ export default class AcePromptoEditor extends React.Component {
         return this.getSession().getMode();
     }
 
-    componentDidMount() {
-        const session = this.getSession();
-        session.setMode(new PromptoMode(this));
-        // session.setUseWorker(true);
-        this.installCommitShortcut();
-    }
-
     installCommitShortcut() {
-        if(this.props.quickCommit) {
+        if(this.props.onCommit) {
             const editor = this.getEditor();
             editor.commands.addCommand({
                 name: "commit",
@@ -95,15 +106,15 @@ export default class AcePromptoEditor extends React.Component {
         session.setScrollTop(0);
     }
 
-    setResource(resource, readOnly) {
+    setResource(resource, readOnly, callback) {
         const editor = this.getEditor();
         const session = editor.getSession();
         const mode = session.getMode();
-        // session.clearGutterDecorations(); // debugger-line
+        session.clearGutterDecorations(); // debugger-line
         // session.clearBreakpoints();
         if(this.state.newContent) {
             mode.setResource(resource, false);
-            this.setState({newContent: null});
+            this.setState({newContent: null}, callback);
         } else {
             mode.setResource(resource, true);
             mode.getResourceBody(resource, body => {
@@ -113,8 +124,27 @@ export default class AcePromptoEditor extends React.Component {
                 /* this.breakpoints.matchingContent(content).forEach(b => {
                     session.setBreakpoint(b.line - 1);
                 }); */
+                if(callback)
+                    callback();
             });
         }
+    }
+
+    setContent(content, readOnly, callback) {
+        const editor = this.getEditor();
+        const session = editor.getSession();
+        const mode = session.getMode();
+        mode.setContent(content, true);
+        mode.getContentBody(content, body => {
+            editor.setValue(body, -1);
+            editor.setReadOnly(readOnly);
+            session.setScrollTop(0);
+            /* this.breakpoints.matchingContent(content).forEach(b => {
+                session.setBreakpoint(b.line - 1);
+            }); */
+            if(callback)
+                callback();
+        });
     }
 
     destroyResource(resource) {
@@ -159,6 +189,36 @@ export default class AcePromptoEditor extends React.Component {
     runTest(testRef, progressed, done) {
         const mode = this.getMode();
         mode.runTest(testRef, progressed, done);
+    }
+
+    debuggerCreated(callback) {
+        this.setState({debugStatus: "PROCESSING"}, callback);
+    }
+
+    showStackFrame(stackFrame, callback) {
+        if (stackFrame)
+            this.doShowStackFrame(stackFrame, callback);
+        else
+            this.setState({debugStatus: "PROCESSING"}, callback);
+    }
+
+    doShowStackFrame(stackFrame, callback) {
+        this.getMode().contentForStackFrame(stackFrame, content => {
+            this.setContent(content, true, () => {
+                let line = stackFrame.statementLine;
+                if(!stackFrame.categoryName || !stackFrame.categoryName.length)
+                    line += 1 - stackFrame.methodLine;
+                this.getEditor().gotoLine(line, 0, true);
+                this.getSession().clearGutterDecorations();
+                this.getSession().addGutterDecoration(line - 1, "debugger-line");
+                this.setState({debugStatus: "IDLING"}, callback);
+            })
+        })
+    }
+
+    debuggerDisconnected(callback) {
+        this.getSession().clearGutterDecorations();
+        this.setState({debugStatus: null}, callback);
     }
 
 }
