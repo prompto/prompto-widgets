@@ -102,14 +102,18 @@ export default class Repository {
         }, this);
     }
 
-    getDeclarationBody(content, dialect) {
+    getContentBody(content, dialect) {
         var decl = this.getDeclaration(content);
+        return this.getDeclarationBody(decl, dialect);
+    }
+
+
+    getDeclarationBody(decl, dialect) {
         if(decl.sourceCode && decl.sourceCode.dialect === dialect)
             return decl.sourceCode.body;
         else
             return unparse(this.projectContext, decl, dialect);
     }
-
 
     getDeclaration(content) {
         if (content.type === "TestRef")
@@ -292,14 +296,16 @@ export default class Repository {
         }
     }
 
+
     doHandleSetContent(content, dialect, listener) {
         var decls = parse(content, dialect, listener);
-        var saved_listener = this.projectContext.problemListener;
+        // don't pollute projectContext
+        var child = this.projectContext.newChildContext();
+        child.pushProblemListener(listener);
         try {
-            this.projectContext.problemListener = listener;
-            decls.check(this.projectContext.newChildContext()); // don't pollute projectContext
+            decls.check(child);
         } finally {
-            this.projectContext.problemListener = saved_listener;
+            child.popProblemListener();
         }
         this.lastSuccess = decls; // assume registered content is always parsed successfully
     }
@@ -524,25 +530,61 @@ export default class Repository {
             return null;
     }
 
-    contentForSection(breakpoint) {
-        let declaration = null;
-        if (breakpoint.type === "category")
-            declaration = this.projectContext.getRegisteredDeclaration(breakpoint.name);
-        else if (breakpoint.type === "method") {
-            const methods = this.projectContext.getRegisteredDeclaration(breakpoint.name);
-            if (methods)
-                declaration = methods.protos[breakpoint.prototype];
-        } else if (breakpoint.type === "test")
-            declaration = this.projectContext.getRegisteredTest(breakpoint.name);
-        if(declaration==null)
+
+    createBreakpointAtLine(content, line, dialect) {
+        if(content === null)
             return null;
-        let section = declaration.locateSectionAtLine(breakpoint.line);
-        if(section==null)
+        let creator = null;
+        switch(content.type) {
+            case "MethodRef":
+                creator = this.createBreakpointAtMethodLine;
+                break;
+            case "TestRef":
+                creator = this.createBreakpointAtTestLine;
+                break;
+            case "CategoryRef":
+            case "WidgetRef":
+                creator = this.createBreakpointAtCategoryLine;
+                break;
+        }
+        if(creator === null)
             return null;
-        section = new prompto.parser.Section(section).asObject();
-        if(!section.path)
-            section.path = "store:/" + breakpoint.type + "/" + breakpoint.name + (breakpoint.type==="method" ? "/" + breakpoint.prototype : "");
-        return section
+        let decl = this.getDeclaration(content);
+        if(decl === null)
+            return null;
+        if(decl.sourceCode.dialect !== dialect) {
+            const body = this.getDeclarationBody(decl, dialect);
+            decl = parse(body, dialect)[0];
+        }
+        return creator.bind(this)(decl, line);
     }
 
+    createBreakpointAtMethodLine(decl, line) {
+        const section = decl.locateSectionAtLine(line);
+        if(section === null)
+            return null;
+        else
+            return { methodName:  decl.name, methodProto: decl.getProto(this.projectContext), statementLine: section.start.line };
+    }
+
+    createBreakpointAtTestLine(decl, line) {
+        const section = decl.locateSectionAtLine(line);
+        if(section === null)
+            return null;
+        else
+            return { methodName:  decl.name, statementLine: section.start.line };
+    }
+
+    createBreakpointAtCategoryLine(decl, line) {
+        if(!decl.methods)
+            return null;
+        for(let i=0; i<decl.methods.length; i++ ) {
+            const method = decl.methods[i];
+            let brkpt = this.createBreakpointAtMethodLine(method, line);
+            if(brkpt !== null) {
+                return Object.assign({}, brkpt, {categoryName: decl.name, methodLine: method.start.line} );
+            }
+        }
+        return null;
+    }
 }

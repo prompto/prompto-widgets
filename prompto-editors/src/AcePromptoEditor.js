@@ -27,8 +27,8 @@ export default class AcePromptoEditor extends React.Component {
     componentDidMount() {
         const session = this.getSession();
         session.setMode(new PromptoMode(this));
-        // session.setUseWorker(true);
         this.installCommitShortcut();
+        this.installToggleBreakpointAction();
     }
 
     getEditor() {
@@ -55,6 +55,11 @@ export default class AcePromptoEditor extends React.Component {
                 }
             });
         }
+    }
+
+    installToggleBreakpointAction() {
+        const editor = this.getEditor();
+        editor.on("guttermousedown", this.toggleBreakpoint.bind(this));
     }
 
     render() {
@@ -219,6 +224,37 @@ export default class AcePromptoEditor extends React.Component {
     debuggerDisconnected(callback) {
         this.getSession().clearGutterDecorations();
         this.setState({debugStatus: null}, callback);
+    }
+
+    toggleBreakpoint(click) {
+        const target = click.domEvent.target;
+        if (target.className.indexOf("ace_gutter-cell") >= 0) {
+            if (click.clientX <= 25 + target.getBoundingClientRect().left) {
+                const session = this.getSession();
+                const row = click.getDocumentPosition().row;
+                const breakpoints = session.getBreakpoints();
+                const hasBreakPoint = !!breakpoints[row];
+                if(hasBreakPoint)
+                    this.removeBreakpoint(row);
+                else
+                    this.addBreakpointIfValid(row);
+                click.stop();
+            }
+        }
+    }
+
+    removeBreakpoint(row) {
+        this.getSession().clearBreakpoint(row);
+    }
+
+    addBreakpointIfValid(row) {
+        // add 1 since row is 0 based but line is 1 based
+        this.getMode().createBreakpointAtLine(row + 1, brkpt => {
+            if(brkpt) {
+                row = brkpt.statementLine - 1;
+                this.getSession().setBreakpoint(row)
+            }
+        });
     }
 
 }

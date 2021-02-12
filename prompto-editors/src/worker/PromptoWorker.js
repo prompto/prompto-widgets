@@ -109,7 +109,7 @@ export default class PromptoWorker extends Mirror {
 
     getContentBody(content) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const body = content ? this.$repo.getDeclarationBody(content, this.$dialect) : "";
+        const body = content ? this.$repo.getContentBody(content, this.$dialect) : "";
         this.sender.callback(body, callbackId);
     }
 
@@ -119,18 +119,17 @@ export default class PromptoWorker extends Mirror {
         this.sender.callback(edited, callbackId);
     }
 
+    createBreakpointAtLine(line) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const brkpt = this.$selected ? this.$repo.createBreakpointAtLine(this.$selected, line, this.$dialect) : null;
+        this.sender.callback(brkpt, callbackId);
+    }
+
     // noinspection JSUnusedGlobalSymbols
     contentForStackFrame(stackFrame) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         const content = this.$repo.contentForStackFrame(stackFrame);
         this.sender.callback(content, callbackId);
-    }
-
-    // noinspection JSUnusedGlobalSymbols
-    contentForSection(breakpoint) {
-        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
-        const section = this.$repo.contentForSection(breakpoint);
-        this.sender.callback(section, callbackId);
     }
 
     // noinspection JSUnusedGlobalSymbols

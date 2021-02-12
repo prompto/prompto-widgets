@@ -75,11 +75,6 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$worker && this.$worker.call("contentForStackFrame", [ message ], callback);
     }
 
-
-    contentForSection( breakpoint, callback) {
-        this.$worker && this.$worker.call("contentForSection", [ breakpoint ], callback);
-    }
-
     destroyResource(resource) {
         const content = resourceToWorkerMessage(resource);
         this.$worker && this.$worker.send("destroyContent", [ content ] );
@@ -142,6 +137,10 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
 
     onBodyEdited(content) {
         this.$editor.bodyEdited(content);
+    }
+
+    createBreakpointAtLine(line, callback) {
+        this.$worker && this.$worker.call("createBreakpointAtLine", [ line ], callback);
     }
 
 }
