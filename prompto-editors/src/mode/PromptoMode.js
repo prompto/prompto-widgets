@@ -4,6 +4,8 @@ import PromptoHighlightRules from "./PromptoHighlightRules";
 import PromptoBehaviour from "./PromptoBehaviour";
 import Defaults from "../code/Defaults";
 import PromptoWorkerClient from "../worker/PromptoWorkerClient";
+import BreakpointsList from "./BreakpointsList";
+import LineBreakpoint from "./LineBreakpoint";
 
 function resourceToWorkerMessage(resource) {
     if(resource !== null) {
@@ -40,6 +42,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.HighlightRules = PromptoHighlightRules;
         this.$behaviour = new PromptoBehaviour();
         this.$progressed = silentProgress;
+        this.breakpointsList = new BreakpointsList();
     }
 
     setProject(dbId, loadDependencies, progressed) {
@@ -58,7 +61,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     }
 
     getContentBody(content, callback) {
-            this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
+        this.$worker && this.$worker.call("getContentBody", [ content ], value => callback(value));
     }
 
     setResource(resource, clearValue) {
@@ -81,7 +84,7 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     }
 
     getEditedResources(resources, callback) {
-        const contents = resources.map(edited => resourceToWorkerMessage(edited.stuff), this);
+        const contents = resources.map(edited => resourceToWorkerMessage(edited), this);
         this.$worker && this.$worker.call("getEditedContents", [ contents ], callback);
     }
 
@@ -139,8 +142,19 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$editor.bodyEdited(content);
     }
 
-    createBreakpointAtLine(line, callback) {
-        this.$worker && this.$worker.call("createBreakpointAtLine", [ line ], callback);
+    createBreakpointAtLine(line, set, callback) {
+        this.$worker && this.$worker.call("createBreakpointAtLine", [ line ], brkpt => {
+            if(brkpt) {
+                const lineBrkpt = new LineBreakpoint(brkpt.categoryName, brkpt.methodName, brkpt.methodProto, brkpt.methodLine, brkpt.statementLine, false);
+                this.breakpointsList.register(lineBrkpt, set);
+            }
+            if(callback)
+                callback(brkpt);
+        });
     }
 
+    getResourceBreakpoints(resource) {
+        const content = resourceToWorkerMessage(resource);
+        return this.breakpointsList.matchingContent(content);
+    }
 }

@@ -81,6 +81,10 @@ export default class AcePromptoEditor extends React.Component {
         this.getSession().getMode().setDialect(dialect);
     }
 
+    setBreakpoints(breakpoints) {
+        this.getSession().getMode().setBreakpoints(breakpoints);
+    }
+
     catalogLoaded(catalog, completed) {
         if(this.props.catalogLoaded)
             this.props.catalogLoaded(catalog, completed);
@@ -116,7 +120,7 @@ export default class AcePromptoEditor extends React.Component {
         const session = editor.getSession();
         const mode = session.getMode();
         session.clearGutterDecorations(); // debugger-line
-        // session.clearBreakpoints();
+        session.clearBreakpoints();
         if(this.state.newContent) {
             mode.setResource(resource, false);
             this.setState({newContent: null}, callback);
@@ -126,15 +130,16 @@ export default class AcePromptoEditor extends React.Component {
                 editor.setValue(body, -1);
                 editor.setReadOnly(readOnly);
                 session.setScrollTop(0);
-                /* this.breakpoints.matchingContent(content).forEach(b => {
-                    session.setBreakpoint(b.line - 1);
-                }); */
+                mode.getResourceBreakpoints(resource).forEach(brkpt => {
+                    session.setBreakpoint(brkpt.statementLine - 1);
+                });
                 if(callback)
                     callback();
             });
         }
     }
 
+    /* called when stepping into code */
     setContent(content, readOnly, callback) {
         const editor = this.getEditor();
         const session = editor.getSession();
@@ -144,7 +149,7 @@ export default class AcePromptoEditor extends React.Component {
             editor.setValue(body, -1);
             editor.setReadOnly(readOnly);
             session.setScrollTop(0);
-            /* this.breakpoints.matchingContent(content).forEach(b => {
+            /* this.breakpointsList.matchingContent(content).forEach(b => {
                 session.setBreakpoint(b.line - 1);
             }); */
             if(callback)
@@ -162,20 +167,20 @@ export default class AcePromptoEditor extends React.Component {
         const mode = this.getMode();
         mode.getEditedResources(resources, edited => {
             const instances = window.readJSONValue(edited);
-            instances.forEach(this.convertStuffToMutated, this);
+            instances.forEach(this.convertEditedToMutated, this);
             callback(instances);
         });
     }
 
-    convertStuffToMutated(edited) {
-        if(edited.stuff) {
-            const stuff = edited.stuff;
-            stuff.$mutable = true;
-            const category = stuff.$storable.category;
-            stuff.$storable = window.$DataStore.instance.newStorableDocument(category, stuff.dbIdListener.bind(stuff));
-            stuff.getAttributeNames().forEach(name => {
-                const isEnum = stuff[name] && stuff[name].name && stuff[name].name === stuff[name].value;
-                stuff.setMember(name, stuff[name], true, true, isEnum);
+    convertEditedToMutated(edited) {
+        if(edited.resource) {
+            const resource = edited.resource;
+            resource.$mutable = true;
+            const category = resource.$storable.category;
+            resource.$storable = window.$DataStore.instance.newStorableDocument(category, resource.dbIdListener.bind(resource));
+            resource.getAttributeNames().forEach(name => {
+                const isEnum = resource[name] && resource[name].name && resource[name].name === resource[name].value;
+                resource.setMember(name, resource[name], true, true, isEnum);
             });
         }
         return edited;
@@ -244,15 +249,21 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     removeBreakpoint(row) {
-        this.getSession().clearBreakpoint(row);
+        // add 1 since ace row is 0 based but prompto line is 1 based
+        this.getMode().createBreakpointAtLine(row + 1, false, brkpt => {
+            this.getSession().clearBreakpoint(row);
+            if (brkpt && this.props.breakpointRemoved)
+                this.props.breakpointRemoved(brkpt);
+        });
     }
 
     addBreakpointIfValid(row) {
-        // add 1 since row is 0 based but line is 1 based
-        this.getMode().createBreakpointAtLine(row + 1, brkpt => {
+        // add 1 since ace row is 0 based but prompto line is 1 based
+        this.getMode().createBreakpointAtLine(row + 1, true, brkpt => {
             if(brkpt) {
-                row = brkpt.statementLine - 1;
-                this.getSession().setBreakpoint(row)
+                this.getSession().setBreakpoint(row);
+                if(brkpt && this.props.breakpointAdded)
+                    this.props.breakpointAdded(brkpt);
             }
         });
     }

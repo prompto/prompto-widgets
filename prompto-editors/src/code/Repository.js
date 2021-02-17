@@ -149,7 +149,7 @@ export default class Repository {
 
     registerClean(obj) {
         var id = this.idFromDbDecl(obj);
-        this.statuses[id] = {stuff: obj, editStatus: "CLEAN"};
+        this.statuses[id] = {resource: obj, editStatus: "CLEAN"};
     }
 
 
@@ -166,7 +166,7 @@ export default class Repository {
             var id = this.idFromDecl(decl);
             var existing = this.statuses[id];
             if (existing) {
-                decl_obj = existing.stuff.value;
+                decl_obj = existing.resource.value;
                 var body = decl.fetchBody(parser);
                 if (decl_obj.dialect !== dialect || decl_obj.body !== body) {
                     decl_obj.dialect = dialect;
@@ -228,7 +228,7 @@ export default class Repository {
                     });
                 this.statuses[id] = {
                     editStatus: "CREATED",
-                    stuff: {
+                    resource: {
                         type: decl.getDeclarationType() + "Declaration",
                         value: decl_obj
                     }
@@ -241,7 +241,7 @@ export default class Repository {
     markChangesCommitted(storedDecls) {
         storedDecls.forEach(storedDecl => {
             const id = this.idFromDbDecl(storedDecl);
-            this.statuses[id].stuff.value.dbId = storedDecl.value.dbId;
+            this.statuses[id].resource.value.dbId = storedDecl.value.dbId;
             this.statuses[id].editStatus = "CLEAN";
         }, this);
     }
@@ -262,7 +262,7 @@ export default class Repository {
         return contents.map( content => {
             const id = this.idFromContent(content);
             const status = this.statuses[id];
-            return {type: "EditedStuff", value: status};
+            return {type: "EditedResource", value: status};
         }, this);
     }
 
@@ -277,7 +277,7 @@ export default class Repository {
         this.registerDestroyed(id);
         var obj_status = this.statuses[id];
         if (obj_status && obj_status.editStatus === "DELETED") {
-            var decls = parse(obj_status.stuff.value.body, obj_status.stuff.value.dialect);
+            var decls = parse(obj_status.resource.value.body, obj_status.resource.value.dialect);
             decls[0].unregister(this.projectContext);
             var delta = new Delta();
             delta.removed = new Catalog(decls, this.librariesContext);
@@ -453,8 +453,8 @@ export default class Repository {
                     if (new_status.editStatus !== "CREATED") // don't overwrite
                         new_status.editStatus = "DIRTY";
                     // update declaration obj
-                    new_status.stuff.type = new_decl.getDeclarationType() + "Declaration";
-                    var decl_obj = new_status.stuff.value;
+                    new_status.resource.type = new_decl.getDeclarationType() + "Declaration";
+                    var decl_obj = new_status.resource.value;
                     decl_obj.name = new_decl.name;
                     decl_obj.dialect = dialect;
                     decl_obj.body = new_decl.fetchBody(parser);
