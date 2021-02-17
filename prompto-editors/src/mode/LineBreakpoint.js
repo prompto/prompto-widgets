@@ -26,7 +26,10 @@ export default class LineBreakpoint extends Breakpoint {
             case "MethodRef":
                 return this.matchesGlobalMethodRef(content);
             case "CategoryRef":
+            case "WidgetRef":
                 return this.matchesCategoryRef(content);
+            case "TestRef":
+                return this.matchesTestRef(content);
             default:
                 return false;
         }
@@ -38,6 +41,10 @@ export default class LineBreakpoint extends Breakpoint {
 
     matchesCategoryRef(content) {
         return content.name === this.categoryName;
+    }
+
+    matchesTestRef(content) {
+        return content.name === this.methodName;
     }
 
 }
