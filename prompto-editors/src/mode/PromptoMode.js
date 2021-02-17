@@ -154,6 +154,9 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     }
 
     getResourceBreakpoints(resource) {
+        // no resource for "new prompto code..."
+        if(!resource)
+            return [];
         const content = resourceToWorkerMessage(resource);
         return this.breakpointsList.matchingContent(content);
     }
