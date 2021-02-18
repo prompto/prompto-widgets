@@ -556,7 +556,9 @@ export default class Repository {
             const body = this.getDeclarationBody(decl, dialect);
             decl = parse(body, dialect)[0];
         }
-        return creator.bind(this)(decl, line);
+        const brkpt = creator.bind(this)(decl, line);
+        // for now always a line breakpoint (planning for constructor, monitor...)
+        return brkpt ? { type: "LineBreakpoint", value: brkpt } : null;
     }
 
     createBreakpointAtMethodLine(decl, line) {
@@ -564,7 +566,7 @@ export default class Repository {
         if(section === null)
             return null;
         else
-            return { methodName:  decl.name, methodProto: decl.getProto(this.projectContext), statementLine: section.start.line };
+            return { methodName:  decl.name, methodProto: decl.getProto(this.projectContext), statementLine: section.startLocation.line };
     }
 
     createBreakpointAtTestLine(decl, line) {
@@ -572,7 +574,7 @@ export default class Repository {
         if(section === null)
             return null;
         else
-            return { methodName:  decl.name, statementLine: section.start.line };
+            return { methodName:  decl.name, statementLine: section.startLocation.line };
     }
 
     createBreakpointAtCategoryLine(decl, line) {
@@ -582,9 +584,53 @@ export default class Repository {
             const method = decl.methods[i];
             let brkpt = this.createBreakpointAtMethodLine(method, line);
             if(brkpt !== null) {
-                return Object.assign({}, brkpt, {categoryName: decl.name, methodLine: method.start.line} );
+                return Object.assign({}, brkpt, {categoryName: decl.name, methodLine: method.startLocation.line} );
             }
         }
         return null;
+    }
+
+    locateSection(breakpoint) {
+        let declaration = null;
+        if (breakpoint.categoryName)
+            declaration = this.projectContext.getRegisteredDeclaration(breakpoint.categoryName);
+        else if (breakpoint.methodName) {
+            if(breakpoint.methodName === '"')
+                declaration = this.projectContext.getRegisteredTest(breakpoint.name);
+            else {
+                const methods = this.projectContext.getRegisteredDeclaration(breakpoint.methodName);
+                if (methods)
+                    declaration = methods.protos[breakpoint.methodProto];
+            }
+        }
+        if(declaration==null)
+            return null;
+        const section = declaration.locateSectionAtLine(breakpoint.statementLine);
+        if(section==null)
+            return null;
+        const result = section.serialize();
+        if(!result.value.path)
+            result.value.path = this.computeValuePath(breakpoint, declaration, section);
+        return result
+    }
+
+    computeValuePath(breakpoint, declaration, section) {
+        let typeName = "";
+        let valueName = "";
+        let protoName = "";
+        if(declaration instanceof prompto.declaration.TestMethodDeclaration) {
+            typeName = "test";
+            valueName = declaration.name;
+        } else if(declaration instanceof prompto.declaration.BaseMethodDeclaration) {
+            if(declaration.memberOf) {
+                typeName = "category";
+                valueName = declaration.memberOf.name;
+            } else {
+                typeName = "method";
+                valueName = declaration.name;
+                protoName = "/" + breakpoint.methodProto;
+            }
+        }
+        return "store:/" + typeName +"/" + valueName + protoName;
     }
 }

@@ -119,6 +119,18 @@ export default class PromptoWorker extends Mirror {
         this.sender.callback(edited, callbackId);
     }
 
+    locateSection(breakpoint) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const section = this.$repo.locateSection(breakpoint);
+        this.sender.callback(section, callbackId);
+    }
+
+    locateSections(breakpoints) {
+        const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
+        const sections = breakpoints.map(brkpt => this.$repo.locateSection(brkpt));
+        this.sender.callback(sections, callbackId);
+    }
+
     createBreakpointAtLine(line) {
         const callbackId = arguments[arguments.length - 1]; // callbackId is added by ACE
         const brkpt = this.$selected ? this.$repo.createBreakpointAtLine(this.$selected, line, this.$dialect) : null;

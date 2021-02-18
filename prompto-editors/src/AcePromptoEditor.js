@@ -252,8 +252,10 @@ export default class AcePromptoEditor extends React.Component {
         // add 1 since ace row is 0 based but prompto line is 1 based
         this.getMode().createBreakpointAtLine(row + 1, false, brkpt => {
             this.getSession().clearBreakpoint(row);
-            if (brkpt && this.props.breakpointRemoved)
-                this.props.breakpointRemoved(brkpt);
+            if (brkpt && this.props.breakpointRemoved) {
+                const breakpoint = window.readJSONValue(brkpt);
+                this.props.breakpointRemoved(breakpoint);
+            }
         });
     }
 
@@ -262,10 +264,25 @@ export default class AcePromptoEditor extends React.Component {
         this.getMode().createBreakpointAtLine(row + 1, true, brkpt => {
             if(brkpt) {
                 this.getSession().setBreakpoint(row);
-                if(brkpt && this.props.breakpointAdded)
-                    this.props.breakpointAdded(brkpt);
+                if(brkpt && this.props.breakpointAdded) {
+                    const breakpoint = window.readJSONValue(brkpt);
+                    this.props.breakpointAdded(breakpoint);
+                }
             }
         });
     }
 
+    locateSection(breakpoint, callback) {
+        this.getMode().locateSection(breakpoint, found => {
+            const section = window.readJSONValue(found);
+            callback(section);
+        });
+    }
+
+    locateSections(breakpoints, callback) {
+        this.getMode().locateSections(breakpoints, found => {
+            const sections = window.readJSONValue(found);
+            callback(sections);
+        });
+    }
 }

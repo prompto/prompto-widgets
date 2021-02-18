@@ -25,6 +25,14 @@ function stackFrameToWorkerMessage(stackFrame) {
         return null;
 }
 
+
+function breakpointToWorkerMessage(breakpoint) {
+    if(breakpoint !== null) {
+        return { categoryName: breakpoint.categoryName, methodName: breakpoint.methodName, methodProto: breakpoint.methodProto, statementLine: breakpoint.statementLine };
+    } else
+        return null;
+}
+
 // eslint-disable-next-line no-unused-vars
 function silentProgress(text) {
 }
@@ -159,5 +167,15 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
             return [];
         const content = resourceToWorkerMessage(resource);
         return this.breakpointsList.matchingContent(content);
+    }
+
+    locateSection(breakpoint, callback) {
+        const message = breakpointToWorkerMessage(breakpoint);
+        this.$worker && this.$worker.call("locateSection", [ message ], callback);
+    }
+
+    locateSections(breakpoints, callback) {
+        const message = breakpoints.map(brkpt => breakpointToWorkerMessage(brkpt));
+        this.$worker && this.$worker.call("locateSections", [ message ], callback);
     }
 }
