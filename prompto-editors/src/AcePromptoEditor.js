@@ -5,12 +5,20 @@ import "ace-builds/src-noconflict/theme-eclipse";
 import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/ext-searchbox";
 import PromptoMode from "./mode/PromptoMode";
+import BreakpointFactory from "./mode/BreakpointFactory";
+import BreakpointsList from "./mode/BreakpointsList";
 
 function enhanceEditSession() {
     window.ace.EditSession.prototype.clearGutterDecorations = function () {
         // noinspection JSUnusedGlobalSymbols
         this.$decorations = [];
         this._signal("changeBreakpoint", {});
+    };
+}
+
+function enhanceEditor() {
+    window.ace.Editor.prototype.isReadOnly = function () {
+        return this.$readOnly;
     };
 }
 
@@ -21,12 +29,16 @@ export default class AcePromptoEditor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {newContent: null, debugStatus: null};
+        this.resourceBreakpoints = new BreakpointsList();
+        this.settingValue = false;
         enhanceEditSession();
+        enhanceEditor();
     }
 
     componentDidMount() {
         const session = this.getSession();
         session.setMode(new PromptoMode(this));
+        session.getDocument().on("change", this.adjustBreakpoints.bind(this));
         this.installCommitShortcut();
         this.installToggleBreakpointAction();
     }
@@ -82,7 +94,10 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     setBreakpoints(breakpoints) {
-        this.getSession().getMode().setBreakpoints(breakpoints);
+        breakpoints.forEach(brkpt => {
+            const breakpoint = BreakpointFactory.fromInstance(brkpt);
+            this.getMode().registerBreakpoint(breakpoint);
+        });
     }
 
     catalogLoaded(catalog, completed) {
@@ -110,7 +125,9 @@ export default class AcePromptoEditor extends React.Component {
     setBody(body, readOnly) {
         const editor = this.getEditor();
         const session = editor.getSession();
+        this.settingValue = true;
         editor.setValue(body, -1);
+        this.settingValue = false;
         editor.setReadOnly(readOnly);
         session.setScrollTop(0);
     }
@@ -127,10 +144,13 @@ export default class AcePromptoEditor extends React.Component {
         } else {
             mode.setResource(resource, true);
             mode.getResourceBody(resource, body => {
+                this.settingValue = true;
                 editor.setValue(body, -1);
+                this.settingValue = false;
                 editor.setReadOnly(readOnly);
                 session.setScrollTop(0);
-                mode.getResourceBreakpoints(resource).forEach(brkpt => {
+                this.resourceBreakpoints.use(mode.getResourceBreakpoints(resource));
+                this.resourceBreakpoints.all().forEach(brkpt => {
                     session.setBreakpoint(brkpt.statementLine - 1);
                 });
                 if(callback)
@@ -144,14 +164,20 @@ export default class AcePromptoEditor extends React.Component {
         const editor = this.getEditor();
         const session = editor.getSession();
         const mode = session.getMode();
+        session.clearGutterDecorations(); // debugger-line
+        session.clearBreakpoints();
         mode.setContent(content, true);
         mode.getContentBody(content, body => {
+            this.settingValue = true;
             editor.setValue(body, -1);
+            this.settingValue = false;
             editor.setReadOnly(readOnly);
             session.setScrollTop(0);
-            /* this.breakpointsList.matchingContent(content).forEach(b => {
-                session.setBreakpoint(b.line - 1);
-            }); */
+            const breakpoints = mode.getContentBreakpoints(content);
+            this.resourceBreakpoints.use(breakpoints);
+            this.resourceBreakpoints.all().forEach(brkpt => {
+                session.setBreakpoint(brkpt.statementLine - 1);
+            });
             if(callback)
                 callback();
         });
@@ -240,36 +266,48 @@ export default class AcePromptoEditor extends React.Component {
                 const breakpoints = session.getBreakpoints();
                 const hasBreakPoint = !!breakpoints[row];
                 if(hasBreakPoint)
-                    this.removeBreakpoint(row);
+                    this.removeBreakpointAtRow(row, false);
                 else
-                    this.addBreakpointIfValid(row);
+                    this.addBreakpointAtRowIfValid(row, false);
                 click.stop();
             }
         }
     }
 
-    removeBreakpoint(row) {
+    removeBreakpointAtRow(row, isEdit) {
+        this.getSession().clearBreakpoint(row);
         // add 1 since ace row is 0 based but prompto line is 1 based
-        this.getMode().createBreakpointAtLine(row + 1, false, brkpt => {
-            this.getSession().clearBreakpoint(row);
-            if (brkpt && this.props.breakpointRemoved) {
-                const breakpoint = window.readJSONValue(brkpt);
-                this.props.breakpointRemoved(breakpoint);
+        const brkpt = this.resourceBreakpoints.matchingLine(row + 1)[0];
+        if (brkpt)
+            this.removeBreakpoint(brkpt, isEdit);
+    }
+
+    removeBreakpoint(breakpoint, isEdit) {
+        this.resourceBreakpoints.register(breakpoint, false);
+        this.getMode().registerBreakpoint(breakpoint, false);
+        if (this.props.breakpointRemoved) {
+            const value = window.readJSONValue([ {type: breakpoint.getType(), value: breakpoint }, isEdit]);
+            this.props.breakpointRemoved(value);
+        }
+    }
+
+    addBreakpointAtRowIfValid(row, isEdit) {
+        // add 1 since ace row is 0 based but prompto line is 1 based
+        this.getMode().createBreakpointAtLine(row + 1, true, brkpt => {
+            if (brkpt) {
+                this.getSession().setBreakpoint(row);
+                this.addBreakpoint(brkpt, isEdit);
             }
         });
     }
 
-    addBreakpointIfValid(row) {
-        // add 1 since ace row is 0 based but prompto line is 1 based
-        this.getMode().createBreakpointAtLine(row + 1, true, brkpt => {
-            if(brkpt) {
-                this.getSession().setBreakpoint(row);
-                if(brkpt && this.props.breakpointAdded) {
-                    const breakpoint = window.readJSONValue(brkpt);
-                    this.props.breakpointAdded(breakpoint);
-                }
-            }
-        });
+    addBreakpoint(breakpoint, isEdit) {
+        this.resourceBreakpoints.register(breakpoint, true);
+        this.getMode().registerBreakpoint(breakpoint, true);
+        if(this.props.breakpointAdded) {
+            const value = window.readJSONValue([{type: breakpoint.getType(), value: breakpoint }, isEdit]);
+            this.props.breakpointAdded(value);
+        }
     }
 
     locateSection(breakpoint, callback) {
@@ -285,4 +323,86 @@ export default class AcePromptoEditor extends React.Component {
             callback(sections);
         });
     }
+
+    adjustBreakpoints(delta) {
+        // don't touche breakpoints while imperatively setting value
+        if(this.settingValue)
+            return;
+        // changes with row do not affect breakpoints
+        if (delta.end.row === delta.start.row)
+            return;
+        // if no edit allowed, no change can affect existing breakpoints
+        if(this.getEditor().isReadOnly())
+            return;
+        const breakpoints = this.getSession().getBreakpoints();
+        switch(delta.action) {
+            case "insert":
+                this.adjustBreakpointsOnInsert(delta, breakpoints.slice());
+                break
+            case "remove":
+                this.adjustBreakpointsOnRemove(delta, breakpoints.slice());
+                break
+            default:
+                console.log(delta.action + " not handled!");
+        }
+    }
+
+    adjustBreakpointsOnInsert(delta, breakpoints) {
+        const inserted = delta.end.row - delta.start.row;
+        // special case for CR inserted at end of row with breakpoint
+        const isEOL = this.isCrAtEOL(delta);
+        for(let row of breakpoints.keys()) {
+            if(!row || !breakpoints[row])
+                continue;
+            if(row < delta.start.row)
+                continue;
+            const breakpoint = this.resourceBreakpoints.matchingLine(row + 1)[0];
+            if(breakpoint) {
+                if(row > delta.start.row || !isEOL) {
+                    this.getSession().clearBreakpoint(row);
+                    this.removeBreakpoint(breakpoint, true)
+                    this.getSession().setBreakpoint(row + inserted);
+                    if (breakpoint.methodLine >= delta.start.row)
+                        breakpoint.methodLine += inserted;
+                    breakpoint.statementLine += inserted;
+                    this.addBreakpoint(breakpoint, true);
+                }
+            } else
+                console.log("Breakpoint not found for row: " + row);
+        }
+    }
+
+    adjustBreakpointsOnRemove(delta, breakpoints) {
+        const removed = delta.end.row - delta.start.row;
+        // special case for CR remove at start of row following breakpoint
+        const isSOL = this.isCrAtEOL(delta);
+        for(let row of breakpoints.keys()) {
+            if(!row || !breakpoints[row])
+                continue;
+            if(row < delta.start.row)
+                continue;
+            const breakpoint = this.resourceBreakpoints.matchingLine(row + 1)[0];
+            if(breakpoint) {
+                if(row > delta.start.row || !isSOL) {
+                    this.getSession().clearBreakpoint(row);
+                    this.removeBreakpoint(breakpoint, true)
+                    if (row >= delta.end.row) {
+                        this.getSession().setBreakpoint(row - removed);
+                        if (breakpoint.methodLine >= delta.start.row)
+                            breakpoint.methodLine -= removed;
+                        breakpoint.statementLine -= removed;
+                        this.addBreakpoint(breakpoint, true);
+                    }
+                }
+            } else
+                console.log("Breakpoint not found for row: " + row);
+        }
+    }
+
+    isCrAtEOL(delta) {
+        return delta.lines.length === 2 && delta.lines[0] === "" && delta.lines[1] === "" // no char inserted
+            && delta.start.column > 0 && delta.start.column === this.getSession().getDocument().getLine(delta.start.row).length // first row change was at EOL
+            && delta.end.column === 0; // second row change is at SOL
+    }
+
 }

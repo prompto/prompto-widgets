@@ -4,6 +4,10 @@ export default class Breakpoint {
         this.active = !!active;
     }
 
+    getType() {
+        return "Breakpoint";
+    }
+
     equals(other) {
         return false;
     }
@@ -11,4 +15,8 @@ export default class Breakpoint {
     matchesContent(content) {
         return false;
     }
- }
+
+    matchesLine(line) {
+        return false;
+    }
+}

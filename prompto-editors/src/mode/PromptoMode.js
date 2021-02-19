@@ -5,7 +5,7 @@ import PromptoBehaviour from "./PromptoBehaviour";
 import Defaults from "../code/Defaults";
 import PromptoWorkerClient from "../worker/PromptoWorkerClient";
 import BreakpointsList from "./BreakpointsList";
-import LineBreakpoint from "./LineBreakpoint";
+import BreakpointFactory from "./BreakpointFactory";
 
 function resourceToWorkerMessage(resource) {
     if(resource !== null) {
@@ -18,17 +18,16 @@ function resourceToWorkerMessage(resource) {
 }
 
 function stackFrameToWorkerMessage(stackFrame) {
-    if(stackFrame !== null) {
-        const prototype = stackFrame.prototype === undefined ? null : stackFrame.prototype;
-        return { categoryName: stackFrame.categoryName, methodName: stackFrame.methodName, methodProto: prototype };
-    } else
+    if(stackFrame !== null)
+        return { categoryName: stackFrame.categoryName, methodName: stackFrame.methodName, methodProto: stackFrame.methodProto || "" };
+    else
         return null;
 }
 
 
 function breakpointToWorkerMessage(breakpoint) {
     if(breakpoint !== null) {
-        return { categoryName: breakpoint.categoryName, methodName: breakpoint.methodName, methodProto: breakpoint.methodProto, statementLine: breakpoint.statementLine };
+        return { categoryName: breakpoint.categoryName, methodName: breakpoint.methodName, methodProto: breakpoint.methodProto || "", statementLine: breakpoint.statementLine };
     } else
         return null;
 }
@@ -150,14 +149,15 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         this.$editor.bodyEdited(content);
     }
 
+    registerBreakpoint(breakpoint, set) {
+        this.breakpointsList.register(breakpoint, set);
+    }
+
     createBreakpointAtLine(line, set, callback) {
         this.$worker && this.$worker.call("createBreakpointAtLine", [ line ], brkpt => {
-            if(brkpt) {
-                const lineBrkpt = new LineBreakpoint(brkpt.categoryName, brkpt.methodName, brkpt.methodProto, brkpt.methodLine, brkpt.statementLine, false);
-                this.breakpointsList.register(lineBrkpt, set);
-            }
+            const breakpoint = brkpt ? BreakpointFactory.fromObject(brkpt) : null;
             if(callback)
-                callback(brkpt);
+                callback(breakpoint);
         });
     }
 
@@ -166,6 +166,10 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         if(!resource)
             return [];
         const content = resourceToWorkerMessage(resource);
+        return this.breakpointsList.matchingContent(content);
+    }
+
+    getContentBreakpoints(content) {
         return this.breakpointsList.matchingContent(content);
     }
 

@@ -2,13 +2,11 @@
 export default class BreakpointsList {
 
     constructor(breakpoints) {
-        this.breakpoints = [];
-        /*this.breakpoints = breakpoints ? breakpoints.map(b=>{
-            // eslint-disable-next-line
-            const type = eval(b.type);
-            const breakpoint = new type();
-            return { status: "CLEAN", breakpoint: breakpoint.fromStored(b.value)};
-        }) : []; */
+        this.use(breakpoints);
+    }
+
+    use(breakpoints) {
+        this.breakpoints = breakpoints || [];
     }
 
     register(breakpoint, set) {
@@ -27,4 +25,7 @@ export default class BreakpointsList {
         return this.breakpoints.filter(brkpt => brkpt.matchesContent(content));
     }
 
+    matchingLine(line) {
+        return this.breakpoints.filter(brkpt => brkpt.matchesLine(line));
+    }
 }

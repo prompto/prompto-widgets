@@ -11,6 +11,10 @@ export default class LineBreakpoint extends Breakpoint {
         this.statementLine = statementLine;
     }
 
+    getType() {
+        return "LineBreakpoint";
+    }
+
     equals(other) {
         return this === other ||
             (other instanceof LineBreakpoint &&
@@ -19,6 +23,10 @@ export default class LineBreakpoint extends Breakpoint {
                 this.methodProto === other.methodProto &&
                 this.methodLine === other.methodLine &&
                 this.statementLine === other.statementLine);
+    }
+
+    matchesLine(line) {
+        return this.statementLine === line;
     }
 
     matchesContent(content) {

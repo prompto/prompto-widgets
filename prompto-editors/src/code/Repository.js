@@ -525,7 +525,7 @@ export default class Repository {
                 decl = stackFrame.methodProto ? methodsMap.protos[stackFrame.methodProto] : methodsMap.getFirst();
         }
         if(decl)
-            return { type: this.typeFromDeclaration(this.projectContext, decl), name: stackFrame.methodName, proto: stackFrame.methodProto || null };
+            return { type: this.typeFromDeclaration(this.projectContext, decl), name: stackFrame.methodName, prototype: stackFrame.methodProto || null };
         else
             return null;
     }
