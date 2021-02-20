@@ -158,34 +158,40 @@ export default class PromptoWorker extends Mirror {
     loadProject(loadDependencies) {
         this.progress("Fetching project description");
         PromptoWorker.fetchProjectDescription(this.$projectId, true, response => {
-            if (response.error)
+            this.progress( "Fetching project description complete");
+            if (response.error) {
                 this.handleError(response.error);
-            else {
-                this.progress( "Fetching project description complete");
-                this.$project = response.data.value;
-                if (loadDependencies)
-                    this.loadDependencies();
-                // noinspection JSUnresolvedVariable
-                if (this.$project.stubResource) try {
-                    // resource location is absolute
-                    globals.importScripts("/stub?moduleId=" + this.$project.dbId + "&resourceName=" + this.$project.stubResource);
-                } catch(e) {
-                    // TODO something
-                    const trace = e.stack;
-                    console.error(trace);
-                }
+                this.markFailed("%Description%");
+            } else {
+                this.projectLoaded(response.data, loadDependencies);
                 this.markLoaded("%Description%");
-                this.progress("Fetching project code");
-                PromptoWorker.fetchModuleDeclarations(this.$projectId, response => {
-                    if (response.error)
-                        this.handleError(response.error);
-                    else {
-                        this.progress( "Parsing project code");
-                        const cursor = response.data.value;
-                        this.$repo.registerProjectDeclarations(this.$projectId, cursor.items, this.progress.bind(this));
-                        this.markLoaded("Project");
-                    }
-                });
+            }
+        });
+    }
+
+    projectLoaded(data, loadDependencies) {
+        this.$project = data.value;
+        if (loadDependencies)
+            this.loadDependencies();
+        // noinspection JSUnresolvedVariable
+        if (this.$project.stubResource) try {
+            // resource location is absolute
+            globals.importScripts("/stub?moduleId=" + this.$project.dbId + "&resourceName=" + this.$project.stubResource);
+        } catch(e) {
+            // TODO something
+            const trace = e.stack;
+            console.error(trace);
+        }
+        this.progress("Fetching project code");
+        PromptoWorker.fetchModuleDeclarations(this.$projectId, response => {
+            if (response.error) {
+                this.handleError(response.error);
+                this.markFailed("Project");
+            } else {
+                this.progress( "Parsing project code");
+                const cursor = response.data.value;
+                this.$repo.registerProjectDeclarations(this.$projectId, cursor.items, this.progress.bind(this));
+                this.markLoaded("Project");
             }
         });
     }
@@ -202,9 +208,10 @@ export default class PromptoWorker extends Mirror {
     loadDependency(dependency) {
         this.markLoading(dependency.name);
         PromptoWorker.fetchModuleDescription(dependency.name, dependency.version, response => {
-            if(response.error)
+            if(response.error) {
                 this.handleError(response.error);
-            else {
+                this.markFailed(dependency.name);
+            } else {
                 const library = response.data.value;
                 // noinspection JSUnresolvedVariable
                 if(library.stubResource) {
@@ -219,9 +226,10 @@ export default class PromptoWorker extends Mirror {
                 }
                 this.progress( "Fetching " + dependency.name + " code");
                 PromptoWorker.fetchModuleDeclarations(library.dbId, response => {
-                    if (response.error)
+                    if (response.error) {
                         this.handleError(response.error);
-                    else {
+                        this.markFailed(dependency.name);
+                    } else {
                         this.progress( "Parsing " + dependency.name + " code");
                         const cursor = response.data.value;
                         this.$repo.registerLibraryDeclarations(cursor.items);
@@ -285,10 +293,21 @@ export default class PromptoWorker extends Mirror {
         this.$loading[name] = true;
     }
 
+    markFailed (name) {
+        if (name !== "%Description%")
+            this.progress("Loading " + name + " failed");
+        delete this.$loading[name];
+        this.checkLoadingComplete(name);
+    }
+
     markLoaded (name) {
         if(name !== "%Description%")
             this.progress( "Loading " + name + " complete");
         delete this.$loading[name];
+        this.checkLoadingComplete(name);
+    }
+
+    checkLoadingComplete (name) {
         const complete = Object.keys(this.$loading).length === 0;
         // is this the Project ?
         if(name==="Project")
