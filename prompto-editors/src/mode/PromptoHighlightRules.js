@@ -31,7 +31,7 @@ export default class PromptoHighlightRules extends window.ace.acequire(
         );
 
         const functions = (
-            "write|read|open|execute|invoke|pass|fetch|flush|sorted|store"
+            "write|read|open|execute|invoke|pass|fetch|flush|sorted|delete|store"
         );
 
         const constants = (
