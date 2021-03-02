@@ -1,0 +1,50 @@
+@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: { values: <"lg", "large", "sm", "small", "xs", "xsmall">, required: false }, bsStyle: { values: <"success", "warning", "danger", "info", "default", "primary", "link">, required: false }, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: { values: <"button", "reset", "submit">, required: false } })
+native widget Button {
+
+    category bindings {
+        JavaScript: ReactBootstrap.Button;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+native widget NavbarBrand {
+
+    category bindings {
+        JavaScript: ReactBootstrap.Navbar.Brand;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+@WidgetProperties({ bsClass: Text, bsSize: { values: <"lg", "large", "sm", "small">, required: false } })
+native widget InputGroup {
+
+    category bindings {
+        JavaScript: ReactBootstrap.InputGroup;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+@WidgetProperties({ bsClass: Text })
+native widget InputGroupAddon {
+
+    category bindings {
+        JavaScript: ReactBootstrap.InputGroup.Addon;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
