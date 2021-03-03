@@ -1,5 +1,6 @@
 import PropTypes from "introspective-prop-types";
 
+/*
 import Module from "module";
 const require = Module.prototype.require;
 Module.prototype.require = function(id) {
@@ -8,7 +9,10 @@ Module.prototype.require = function(id) {
     else
         return require(id);
 };
-if(jest) {
+*/
+
+// noinspection PointlessBooleanExpressionJS
+if(typeof(jest) !== typeof(undefined))  {
     jest.setMock("prop-types", PropTypes);
 }
 

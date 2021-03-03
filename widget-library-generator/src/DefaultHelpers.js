@@ -1,4 +1,4 @@
-import TypeProperty from "./TypeProperty";
+import TypeProperty from "./TypeProperty.js";
 
 export const DEFAULT_HELPERS = {
     onClick: propType => new TypeProperty("ClickEventCallback"),

@@ -1,7 +1,7 @@
 import "../src/PropTypesPatcher";
 import PropTypes from "introspective-prop-types";
 import * as ReactBootstrap from "react-bootstrap";
-import WrapperGenerator from "../src/WrapperGenerator";
+import WidgetLibraryGenerator from "../src/WidgetLibraryGenerator";
 import fs from 'fs';
 import TypeProperty from "../src/TypeProperty";
 
@@ -21,7 +21,7 @@ const LIBRARY = {
 
 it("uses the proper helpers", () => {
     const projectDir = "samples/rbs3/";
-    const generator = new WrapperGenerator(projectDir, LIBRARY, HELPERS);
+    const generator = new WidgetLibraryGenerator(projectDir, LIBRARY, HELPERS);
     let helpers = generator.getHelpers("Button");
     expect(helpers.onClick().toString()).toEqual("SpecificCallback");
     expect(helpers.onHover().toString()).toEqual("LibraryCallback");
@@ -34,9 +34,9 @@ it("uses the proper helpers", () => {
 
 it("generates a wrapper", () => {
     const projectDir = "samples/rbs3/";
-    const wrapper = new WrapperGenerator(projectDir, ReactBootstrap, HELPERS);
+    const wrapper = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS);
     const libraryDir = "generated/rbs3/";
-    wrapper.generateWrapper(libraryDir);
+    wrapper.generateLibrary(libraryDir);
     expect(fs.existsSync(libraryDir + "module.json")).toBeTruthy();
     expect(fs.existsSync(libraryDir + "main.js")).toBeTruthy();
     expect(fs.existsSync(libraryDir + "stub.js")).toBeTruthy();

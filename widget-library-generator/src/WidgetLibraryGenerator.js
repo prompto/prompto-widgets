@@ -1,8 +1,8 @@
 import fs from 'fs';
-import WidgetGenerator from "./WidgetGenerator";
-import {DEFAULT_HELPERS} from "./DefaultHelpers";
+import WidgetGenerator from "./WidgetGenerator.js";
+import {DEFAULT_HELPERS} from "./DefaultHelpers.js";
 
-export default class WrapperGenerator {
+export default class WidgetLibraryGenerator {
 
     constructor(projectDir, globals, helpers) {
         this.projectDir = projectDir;
@@ -10,7 +10,7 @@ export default class WrapperGenerator {
         this.helpers = helpers;
     }
 
-    generateWrapper(targetDir) {
+    generateLibrary(targetDir) {
         this.readProject();
         fs.mkdirSync(targetDir, { recursive: true });
         this.generateModule(targetDir);
@@ -116,8 +116,11 @@ export default class WrapperGenerator {
     generateWidgetCode(promptoName, nativeName) {
         const helpers = this.getHelpers(promptoName);
         const klass = this.loadClass(this.globals, nativeName);
-        const generator = new WidgetGenerator(klass, helpers);
-        return generator.generate(promptoName, this.project.prefix + "." + nativeName);
+        if(klass) {
+            const generator = new WidgetGenerator(klass, helpers);
+            return generator.generate(promptoName, this.project.prefix + "." + nativeName);
+        } else
+            console.error("Could not find class: " + nativeName);
     }
 
     getHelpers(promptoName) {

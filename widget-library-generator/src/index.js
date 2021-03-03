@@ -1,7 +1,7 @@
-import "./PropTypesPatcher";
+import "./PropTypesPatcher.js";
 import PropTypes from "introspective-prop-types";
-import TypeProperty from "./TypeProperty";
-import ValueSetProperty from "./ValueSetProperty";
-import WrapperGenerator from "./WrapperGenerator";
+import TypeProperty from "./TypeProperty.js";
+import ValueSetProperty from "./ValueSetProperty.js";
+import WidgetLibraryGenerator from "./WidgetLibraryGenerator.js";
 
-export { PropTypes, TypeProperty, ValueSetProperty, WrapperGenerator };
+export { PropTypes, TypeProperty, ValueSetProperty, WidgetLibraryGenerator };

@@ -1,8 +1,8 @@
 import PropTypes from "introspective-prop-types";
 import { componentOrElement, elementType } from "prop-types-extra";
-import TypeProperty from "./TypeProperty";
-import RequiredProperty from "./RequiredProperty";
-import ValueSetProperty from "./ValueSetProperty";
+import TypeProperty from "./TypeProperty.js";
+import RequiredProperty from "./RequiredProperty.js";
+import ValueSetProperty from "./ValueSetProperty.js";
 
 export default class PropertyConverter {
 

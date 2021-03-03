@@ -1,4 +1,4 @@
-import PropertyConverter from "./PropertyConverter";
+import PropertyConverter from "./PropertyConverter.js";
 
 const template =
 `native widget $promptoName$ {

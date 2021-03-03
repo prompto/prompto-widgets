@@ -1,5 +1,3 @@
-import TypeProperty from "./TypeProperty";
-
 export default class RequiredProperty {
 
     constructor(wrapped) {
