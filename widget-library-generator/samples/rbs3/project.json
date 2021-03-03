@@ -5,11 +5,14 @@
   "migrateFrom" : "1.0.0",
   "description" : "React Bootstrap 3 widgets",
   "htmlEngine" : "react-16",
+  "promptoResource" : "widgets.poc",
+  "stubJSResource" : "stub.js",
+  "javaScripts" : [ "main.js" ],
   "styleSheets" : [ "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css",
-                    "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" ],
-  "codeResource" : "widgets.poc",
-  "nativeResource" : "main.js",
-  "stubResource" : "stub.js",
+    "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" ],
+  "resources" : [
+    { "url": "main.js.map", "mimeType": "application/octet-stream" }
+  ],
   "prefix" : "ReactBootstrap",
   "widgets" : {
     "Button" : "Button",
