@@ -28,7 +28,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "webpack",
+    "build": "webpack --config webpack.config.cjs",
     "generate": "node src/LibraryGenerator.js"
   },
   "browserslist": [
