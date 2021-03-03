@@ -23,6 +23,7 @@
     "react-dom": "^16.7.0"
   },
   "dependencies": {
+    "introspective-prop-types": "^0.0.4",
     "react-bootstrap": "^1.5.1",
     "react-bootstrap-typeahead": "5.1.4"
   },
