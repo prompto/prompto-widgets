@@ -31,7 +31,7 @@ export default class WidgetsPage extends React.Component {
         });
     }
 
-    handeContextMenu(e) {
+    handleContextMenu(e) {
         e.preventDefault();
         this.setState({contextMenu: true});
     }
@@ -40,7 +40,7 @@ export default class WidgetsPage extends React.Component {
         const menuStyle = { position: "fixed", display: "block", left: 100, top: 100, zIndex: 999999 };
         const selected = this.state.selected ? this.state.selected.name : "";
         return <div style={{width: "500px"}}>
-            <InputGroup className="mb-3">
+            <InputGroup className="mb-3" >
                 <FormControl
                     placeholder="Recipient's username"
                     aria-label="Recipient's username"
@@ -52,7 +52,7 @@ export default class WidgetsPage extends React.Component {
             </InputGroup>
 
             <FormGroup >
-                    <FormLabel onContextMenu={this.handeContextMenu.bind(this)}>Date picker</FormLabel>
+                    <FormLabel onContextMenu={this.handleContextMenu.bind(this)}>Date picker</FormLabel>
                     <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
                 </FormGroup>
                 <FormGroup>
