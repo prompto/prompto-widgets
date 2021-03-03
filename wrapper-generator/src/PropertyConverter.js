@@ -4,10 +4,6 @@ import TypeProperty from "./TypeProperty";
 import RequiredProperty from "./RequiredProperty";
 import ValueSetProperty from "./ValueSetProperty";
 
-const DEFAULT_HELPERS = {
-    onClick: propType => new TypeProperty("ClickEventCallback")
-};
-
 export default class PropertyConverter {
 
     constructor(klass, helpers) {
@@ -22,8 +18,6 @@ export default class PropertyConverter {
             return null;
         else if (this.helpers[name])
             return this.helpers[name](propType);
-        else if (DEFAULT_HELPERS[name])
-            return DEFAULT_HELPERS[name](propType);
         else
             return this.doConvertOne(propType);
     }

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import WidgetGenerator from "./WidgetGenerator";
-import {Button} from "react-bootstrap";
-import {HELPERS} from "./ReactBootstrap3Helpers";
+import {DEFAULT_HELPERS} from "./DefaultHelpers";
 
 export default class WrapperGenerator {
 
@@ -115,9 +114,16 @@ export default class WrapperGenerator {
     }
 
     generateWidgetCode(promptoName, nativeName) {
+        const helpers = this.getHelpers(promptoName);
         const klass = this.loadClass(this.globals, nativeName);
-        const generator = new WidgetGenerator(klass, this.helpers);
+        const generator = new WidgetGenerator(klass, helpers);
         return generator.generate(promptoName, this.project.prefix + "." + nativeName);
+    }
+
+    getHelpers(promptoName) {
+        const genericHelpers = this.helpers["*"] || {};
+        const specificHelpers = this.helpers[promptoName] || {};
+        return Object.assign({}, DEFAULT_HELPERS, genericHelpers, specificHelpers);
     }
 
     loadClass(globals, nativeName) {

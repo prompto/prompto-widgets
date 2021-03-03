@@ -1,14 +1,14 @@
 import "../src/PropTypesPatcher";
 import { Button } from "react-bootstrap";
 import WidgetGenerator from "../src/WidgetGenerator";
-import {HELPERS} from "../src/ReactBootstrap3Helpers";
+import { DEFAULT_HELPERS } from "../src/DefaultHelpers";
 
 function purify(value) {
     return value.replace(/ \t\n/g, "");
 }
 
 it("generates a Button widget", () => {
-    const generator = new WidgetGenerator(Button, HELPERS);
+    const generator = new WidgetGenerator(Button, DEFAULT_HELPERS);
     let generated = generator.generate("Button", "ReactBootstrap.Button");
     let expected = `@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: { values: <"lg", "large", "sm", "small", "xs", "xsmall">, required: false }, bsStyle: { values: <"success", "warning", "danger", "info", "default", "primary", "link">, required: false }, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: { values: <"button", "reset", "submit">, required: false } })
 native widget Button {
