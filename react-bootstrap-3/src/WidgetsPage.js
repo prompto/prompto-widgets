@@ -31,7 +31,7 @@ export default class WidgetsPage extends React.Component {
         });
     }
 
-    handeContextMenu(e) {
+    handleContextMenu(e) {
         e.preventDefault();
         this.setState({contextMenu: true});
     }
@@ -41,7 +41,7 @@ export default class WidgetsPage extends React.Component {
         const selected = this.state.selected ? this.state.selected.name : "";
         return <>
                 <FormGroup >
-                    <ControlLabel onContextMenu={this.handeContextMenu.bind(this)}>Label</ControlLabel>
+                    <ControlLabel onContextMenu={this.handleContextMenu.bind(this)}>Label</ControlLabel>
                     <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
                 </FormGroup>
                 <FormGroup>
