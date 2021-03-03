@@ -14,9 +14,9 @@ export default class WidgetLibraryGenerator {
         this.readProject();
         fs.mkdirSync(targetDir, { recursive: true });
         this.generateModule(targetDir);
-        this.copyNativeResource(targetDir);
+        this.copyNativeResources(targetDir);
         this.generateStub(targetDir);
-        this.generateCodeResource(targetDir);
+        this.generatePromptoResource(targetDir);
     }
 
     readProject() {
@@ -36,24 +36,32 @@ export default class WidgetLibraryGenerator {
         fs.writeFileSync(projectFile, text);
     }
 
-    copyNativeResource(targetDir) {
-        const nativeResource = this.project.nativeResource;
+    copyNativeResources(targetDir) {
+        if (this.project.javaScripts)
+            this.project.javaScripts.forEach(res => this.copyNativeResource(targetDir, res));
+        if (this.project.styleSheets)
+            this.project.styleSheets.forEach(res => this.copyNativeResource(targetDir, res));
+        if (this.project.resources)
+            this.project.resources.forEach(res => this.copyNativeResource(targetDir, res.url));
+    }
+
+    copyNativeResource(targetDir, resource) {
         // only copy local resource
-        if(nativeResource && !nativeResource.startsWith("http") && !nativeResource.startsWith("/")) {
+        if(resource && !resource.startsWith("http") && !resource.startsWith("/")) {
             let sep = this.projectDir.endsWith("/") ? "" : "/";
-            const localFile = this.projectDir + sep + nativeResource;
+            const localFile = this.projectDir + sep + resource;
             sep = targetDir.endsWith("/") ? "" : "/";
-            const targetFile = targetDir + sep + nativeResource;
+            const targetFile = targetDir + sep + resource;
             fs.copyFileSync(localFile, targetFile);
         }
     }
 
     generateStub(targetDir) {
-        const stubResource = this.project.stubResource;
-        if(stubResource) {
+        const stubJSResource = this.project.stubJSResource;
+        if(stubJSResource) {
             const text = this.createStub();
             const sep = targetDir.endsWith("/") ? "" : "/";
-            const targetFile = targetDir + sep + stubResource;
+            const targetFile = targetDir + sep + stubJSResource;
             fs.writeFileSync(targetFile, text);
         }
     }
@@ -105,11 +113,11 @@ export default class WidgetLibraryGenerator {
         }
     }
 
-    generateCodeResource(targetDir) {
+    generatePromptoResource(targetDir) {
         const widgets = this.project.widgets;
         const texts = Object.getOwnPropertyNames(widgets).map( name => this.generateWidgetCode( name, widgets[name] ), this);
         const sep = targetDir.endsWith("/") ? "" : "/";
-        const targetFile = targetDir + sep + this.project.codeResource;
+        const targetFile = targetDir + sep + this.project.promptoResource;
         fs.writeFileSync(targetFile, texts.join("\n"));
     }
 
