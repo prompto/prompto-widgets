@@ -1,0 +1,47 @@
+native widget Button {
+
+    category bindings {
+        JavaScript: ReactBootstrap.Button;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+native widget NavbarBrand {
+
+    category bindings {
+        JavaScript: ReactBootstrap.Navbar.Brand;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+native widget InputGroup {
+
+    category bindings {
+        JavaScript: ReactBootstrap.InputGroup;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
+
+native widget InputGroupAppend {
+
+    category bindings {
+        JavaScript: ReactBootstrap.InputGroup.Append;
+    }
+    
+    Html method render () {
+        JavaScript: return this.render();
+    }
+
+}
