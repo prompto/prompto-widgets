@@ -18,5 +18,8 @@
                 "Navbar.Brand",
                 "InputGroup",
                 "InputGroup.Addon"
-              ]
+              ],
+  "renamings" : {
+    "Button" : "XButton"
+  }
 }

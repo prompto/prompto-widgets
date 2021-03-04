@@ -129,7 +129,8 @@ export default class WidgetLibraryGenerator {
         const klass = this.loadClass(this.globals, nativeName);
         if(klass) {
             const generator = new WidgetGenerator(nativeName, klass, helpers);
-            const promptoName = nativeName.replace(/\./g, "");
+            const renamings = this.project.renamings || {};
+            const promptoName = renamings[nativeName] || nativeName.replace(/\./g, "");
             return generator.generate(promptoName, this.project.prefix + "." + nativeName);
         } else
             console.error("Could not find class: " + nativeName);

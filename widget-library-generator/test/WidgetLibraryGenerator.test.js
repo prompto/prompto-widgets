@@ -14,12 +14,11 @@ const HELPERS = {
     }
 };
 
-const LIBRARY = {
-    Button: { propTypes: { onClick: PropTypes.func, onHover:  PropTypes.func } },
-    Image: { propTypes: { onClick: PropTypes.func, onHover:  PropTypes.func } }
-}
-
 it("uses the proper helpers", () => {
+    const LIBRARY = {
+        Button: { propTypes: { onClick: PropTypes.func, onHover:  PropTypes.func } },
+        Image: { propTypes: { onClick: PropTypes.func, onHover:  PropTypes.func } }
+    }
     const projectDir = "samples/rbs3/";
     const generator = new WidgetLibraryGenerator(projectDir, LIBRARY, HELPERS);
     let helpers = generator.getHelpers("Button");
@@ -41,4 +40,13 @@ it("generates a wrapper", () => {
     expect(fs.existsSync(libraryDir + "main.js")).toBeTruthy();
     expect(fs.existsSync(libraryDir + "stub.js")).toBeTruthy();
     expect(fs.existsSync(libraryDir + "widgets.poc")).toBeTruthy();
+});
+
+it("renames if required", () => {
+    const projectDir = "samples/rbs3/";
+    const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, null);
+    const libraryDir = "generated/rbs3/";
+    generator.generateLibrary(libraryDir);
+    const prompto = fs.readFileSync(libraryDir + "widgets.poc", {encoding:'utf8', flag:'r'});
+    expect(prompto).toContain("XButton");
 });
