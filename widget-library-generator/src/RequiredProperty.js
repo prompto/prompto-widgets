@@ -4,7 +4,7 @@ export default class RequiredProperty {
         this.wrapped = wrapped;
     }
 
-    toString() {
-        return this.wrapped.toString(true);
+    toString(options) {
+        return this.wrapped.toString(Object.assign({}, options, {required: true}));
     }
 }

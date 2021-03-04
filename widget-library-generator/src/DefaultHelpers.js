@@ -2,6 +2,7 @@ import TypeProperty from "./TypeProperty.js";
 
 export const DEFAULT_HELPERS = {
     onClick: propType => new TypeProperty("ClickEventCallback"),
+    onChange: propType => new TypeProperty("InputChangedEventCallback"),
     onMouseEnter: propType => new TypeProperty("MouseEventCallback"),
     onMouseOver: propType => new TypeProperty("MouseEventCallback"),
     onMouseOut: propType => new TypeProperty("MouseEventCallback"),
@@ -20,6 +21,7 @@ export const DEFAULT_HELPERS = {
     onBlur: propType => new TypeProperty("Callback"),
     onFocus: propType => new TypeProperty("Callback"),
     onError: propType => new TypeProperty("Callback"),
-    ref: propType => new TypeProperty("WidgetCallback")
+    ref: propType => new TypeProperty("WidgetCallback"),
+    id: propType => new TypeProperty("Any")
 };
 

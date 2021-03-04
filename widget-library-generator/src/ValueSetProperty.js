@@ -1,11 +1,15 @@
-export default class ValueSetProperty {
+import SetProperty from "./SetProperty.js";
+
+export default class ValueSetProperty extends SetProperty {
 
     constructor(values) {
-        this.values = values;
+        super(values);
     }
 
-    toString(required) {
-        return "{ values: <" + this.values.map(this.valueToString).join(", ") + ">, required: " + (required || false) + " }";
+    toString(options) {
+        const appendNull = this.mustAppendNull(options);
+        const values = appendNull ? this.values.concat([null]) : this.values;
+        return "<" + values.map(this.valueToString).join(", ") + ">";
     }
 
     valueToString(value) {
@@ -13,7 +17,7 @@ export default class ValueSetProperty {
             return "null";
         else if(typeof(value) === typeof(""))
             return '"' + value + '"';
-        else if(value.toString)
+        else if(value && value.toString)
             return value.toString();
         else
             return "" + value;

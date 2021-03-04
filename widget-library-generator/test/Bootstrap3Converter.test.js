@@ -23,7 +23,7 @@ it("converts a number property", () => {
 it("converts a property with helper", () => {
     const converter = new PropertyConverter(Button);
     const converted = converter.convertOne("bsSize");
-    expect(converted.toString()).toEqual('{ values: <"lg", "large", "sm", "small", "xs", "xsmall">, required: false }');
+    expect(converted.toString()).toEqual('<"lg", "large", "sm", "small", "xs", "xsmall", null>');
 });
 
 it("converts an elementType property", () => {
@@ -35,5 +35,5 @@ it("converts an elementType property", () => {
 it("converts a oneOf property without helper", () => {
     const converter = new PropertyConverter(Button);
     const converted = converter.convertOne("type");
-    expect(converted.toString()).toEqual('{ values: <"button", "reset", "submit">, required: false }');
+    expect(converted.toString()).toEqual('<"button", "reset", "submit", null>');
 });

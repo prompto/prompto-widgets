@@ -28,7 +28,7 @@ class ConvertedProps {
     toString() {
         return "{ " + this.names.map(name => {
             const prop = this.props.get(name);
-            return name + ": " + (prop ? prop.toString() : "null");
+            return name + ": " + (prop ? prop.toString({}) : "null");
         }).join(", ") + " }";
     }
 }
@@ -36,7 +36,8 @@ class ConvertedProps {
 
 export default class WidgetGenerator {
 
-    constructor(klass, helpers) {
+    constructor(nativeName, klass, helpers) {
+        this.nativeName = nativeName;
         this.klass = klass;
         this.helpers = helpers;
     }
@@ -49,12 +50,22 @@ export default class WidgetGenerator {
     }
 
     convertProps() {
-        if(!this.klass.propTypes)
+        const missing = this.helpers["%MISSING%"];
+        if(!this.klass.propTypes && !missing)
             return null;
         const converter = new PropertyConverter(this.klass, this.helpers);
-        const names = Object.getOwnPropertyNames(this.klass.propTypes).sort(); // sort to make it predictable
+        const namesFromKlass = this.klass.propTypes ? Object.getOwnPropertyNames(this.klass.propTypes) : [];
+        const namesFromHelpers = missing ? Object.getOwnPropertyNames(missing) : [];
+        const names = namesFromKlass.concat(namesFromHelpers).sort(); // sort to make tests predictable
         const props = new ConvertedProps(names);
-        names.forEach(name => props.set(name, converter.convertOne(name)));
+        namesFromKlass.forEach(name => {
+            const prop = converter.convertOne(name);
+            if(prop)
+                props.set(name, prop);
+            else
+                console.error("Could not convert property: " + name + " of widget " + this.nativeName);
+        });
+        namesFromHelpers.forEach(name => props.set(name,  missing[name]()));
         return props;
     }
 }

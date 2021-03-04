@@ -4,10 +4,11 @@ import {DEFAULT_HELPERS} from "./DefaultHelpers.js";
 
 export default class WidgetLibraryGenerator {
 
-    constructor(projectDir, globals, helpers) {
+    constructor(projectDir, globals, helpers, declarations) {
         this.projectDir = projectDir;
         this.globals = globals;
         this.helpers = helpers;
+        this.declarations = declarations || [];
     }
 
     generateLibrary(targetDir) {
@@ -111,7 +112,8 @@ export default class WidgetLibraryGenerator {
     }
 
     generatePromptoResource(targetDir) {
-         const texts = this.project.widgets.map( name => this.generateWidgetCode( name ), this);
+        const widgets = this.project.widgets.map( name => this.generateWidgetCode( name ), this);
+        const texts = widgets.concat(this.declarations);
         const sep = targetDir.endsWith("/") ? "" : "/";
         const targetFile = targetDir + sep + this.project.promptoResource;
         fs.writeFileSync(targetFile, texts.join("\n"));
@@ -121,7 +123,7 @@ export default class WidgetLibraryGenerator {
         const helpers = this.getHelpers(nativeName);
         const klass = this.loadClass(this.globals, nativeName);
         if(klass) {
-            const generator = new WidgetGenerator(klass, helpers);
+            const generator = new WidgetGenerator(nativeName, klass, helpers);
             const promptoName = nativeName.replace(/\./g, "");
             return generator.generate(promptoName, this.project.prefix + "." + nativeName);
         } else

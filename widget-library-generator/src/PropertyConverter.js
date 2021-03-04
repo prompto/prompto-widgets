@@ -1,8 +1,11 @@
 import PropTypes from "introspective-prop-types";
-import { componentOrElement, elementType } from "prop-types-extra";
+import * as PropTypesExtra from "prop-types-extra";
 import TypeProperty from "./TypeProperty.js";
 import RequiredProperty from "./RequiredProperty.js";
 import ValueSetProperty from "./ValueSetProperty.js";
+import TypeSetProperty from "./TypeSetProperty.js";
+import ArrayTypeProperty from "./ArrayTypeProperty.js";
+import ObjectTypeProperty from "./ObjectTypeProperty.js";
 
 export default class PropertyConverter {
 
@@ -23,8 +26,8 @@ export default class PropertyConverter {
     }
 
     doConvertOne(propType) {
-        const prop = this.convertTypeToProp(propType);
-        return this.makeRequired(prop, propType);
+        const prop = PropertyConverter.convertTypeToProp(propType);
+        return prop ? this.makeRequired(prop, propType) : null;
     }
 
     makeRequired(prop, propType) {
@@ -34,19 +37,43 @@ export default class PropertyConverter {
             return prop;
     }
 
-    convertTypeToProp(propType) {
-        if(propType === PropTypes.bool)
+    static convertTypeToProp(propType) {
+        if(propType === PropTypes.any  || propType.type === "any")
+            return new TypeProperty("Any");
+        else if(propType === PropTypes.array  || propType.type === "array")
+            return new TypeProperty("Any[]");
+        else if(propType === PropTypes.bool  || propType.type === "bool")
             return new TypeProperty("Boolean");
-        else if(propType === PropTypes.string)
-            return new TypeProperty("Text");
-        else if(propType === PropTypes.number)
+        else if(propType === PropTypes.func || propType.type === "func")
+            return new TypeProperty("Callback");
+        else if(propType === PropTypes.number || propType.type === "number")
             return new TypeProperty("Integer");
-        else if(propType === PropTypes.elementType)
+        else if(propType === PropTypes.object || propType.type === "object")
+            return new TypeProperty("Any");
+        else if(propType === PropTypes.string || propType.type === "string")
             return new TypeProperty("Text");
+        else if(propType === PropTypes.node || propType.type === "node")
+            return new TypeProperty("Any"); // TODO for now
+        else if(propType === PropTypes.element || propType.type === "element")
+            return new TypeProperty("Html");
+        else if(propType === PropTypes.symbol || propType.type === "symbol")
+            return new TypeProperty("Any");
+        else if(propType === PropTypes.elementType || propType === PropTypesExtra.elementType || propType.type === "elementType")
+            return new TypeProperty("Text");
+        else if(propType.type === "instanceOf")
+            return new TypeProperty("Any"); // TODO for now (could create a new syntax for "is a")
         else if(propType.type === "oneOf")
             return new ValueSetProperty(propType.arg);
-        else if(propType === elementType || propType.name === "elementType" || propType.type === "elementType")
-            return new TypeProperty("Text");
+        else if(propType.type === "oneOfType")
+            return new TypeSetProperty(propType.arg);
+        else if(propType.type === "arrayOf")
+            return new ArrayTypeProperty(propType.arg);
+        else if(propType.type === "objectOf")
+            return new ObjectTypeProperty(propType.arg);
+        else if(propType.type === "shape")
+            return new TypeProperty("Any"); // TODO for now (could create an inline type)
+        else if(propType.type === "exact")
+            return new TypeProperty("Any"); // TODO for now (could create an inline type)
         else
             return null;
     }

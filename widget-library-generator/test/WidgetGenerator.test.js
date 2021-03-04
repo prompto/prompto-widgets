@@ -8,9 +8,9 @@ function purify(value) {
 }
 
 it("generates a Button widget", () => {
-    const generator = new WidgetGenerator(Button, DEFAULT_HELPERS);
+    const generator = new WidgetGenerator("Button", Button, DEFAULT_HELPERS);
     let generated = generator.generate("Button", "ReactBootstrap.Button");
-    let expected = `@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: { values: <"lg", "large", "sm", "small", "xs", "xsmall">, required: false }, bsStyle: { values: <"success", "warning", "danger", "info", "default", "primary", "link">, required: false }, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: { values: <"button", "reset", "submit">, required: false } })
+    let expected = `@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: <"lg", "large", "sm", "small", "xs", "xsmall", null>, bsStyle: <"success", "warning", "danger", "info", "default", "primary", "link", null>, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: <"button", "reset", "submit", null> })
 native widget Button {
 
     category bindings {
