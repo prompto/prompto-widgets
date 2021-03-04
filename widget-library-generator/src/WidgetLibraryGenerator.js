@@ -77,10 +77,7 @@ export default class WidgetLibraryGenerator {
     createWidgetsStubs() {
         const stubs = {};
         const widgets = this.project.widgets;
-        Object.getOwnPropertyNames(widgets).forEach( name => {
-            const nativeWidget = widgets[name];
-            this.createWidgetStubs(stubs, nativeWidget);
-        }, this);
+        widgets.forEach( name => this.createWidgetStubs(stubs, name), this);
         return "self." + this.project.prefix + " = " + this.serialize(stubs) + ";\n";
     }
 
@@ -114,18 +111,18 @@ export default class WidgetLibraryGenerator {
     }
 
     generatePromptoResource(targetDir) {
-        const widgets = this.project.widgets;
-        const texts = Object.getOwnPropertyNames(widgets).map( name => this.generateWidgetCode( name, widgets[name] ), this);
+         const texts = this.project.widgets.map( name => this.generateWidgetCode( name ), this);
         const sep = targetDir.endsWith("/") ? "" : "/";
         const targetFile = targetDir + sep + this.project.promptoResource;
         fs.writeFileSync(targetFile, texts.join("\n"));
     }
 
-    generateWidgetCode(promptoName, nativeName) {
-        const helpers = this.getHelpers(promptoName);
+    generateWidgetCode(nativeName) {
+        const helpers = this.getHelpers(nativeName);
         const klass = this.loadClass(this.globals, nativeName);
         if(klass) {
             const generator = new WidgetGenerator(klass, helpers);
+            const promptoName = nativeName.replace(/\./g, "");
             return generator.generate(promptoName, this.project.prefix + "." + nativeName);
         } else
             console.error("Could not find class: " + nativeName);

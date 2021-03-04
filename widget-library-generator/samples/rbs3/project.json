@@ -14,10 +14,9 @@
     { "url": "main.js.map", "mimeType": "application/octet-stream" }
   ],
   "prefix" : "ReactBootstrap",
-  "widgets" : {
-    "Button" : "Button",
-    "NavbarBrand" : "Navbar.Brand",
-    "InputGroup" : "InputGroup",
-    "InputGroupAddon" : "InputGroup.Addon"
-  }
+  "widgets" : [ "Button",
+                "Navbar.Brand",
+                "InputGroup",
+                "InputGroup.Addon"
+              ]
 }
