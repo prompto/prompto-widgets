@@ -13,11 +13,16 @@ export default class WidgetLibraryGenerator {
 
     generateLibrary(targetDir) {
         this.readProject();
-        fs.mkdirSync(targetDir, { recursive: true });
+        this.createTargetDir(targetDir);
         this.generateModule(targetDir);
         this.copyNativeResources(targetDir);
         this.generateStub(targetDir);
         this.generatePromptoResource(targetDir);
+    }
+
+    createTargetDir(targetDir) {
+        if (!fs.existsSync(targetDir))
+            fs.mkdirSync(targetDir, {recursive: true});
     }
 
     readProject() {
@@ -58,11 +63,11 @@ export default class WidgetLibraryGenerator {
     }
 
     generateStub(targetDir) {
-        const stubJSResource = this.project.stubJSResource;
-        if(stubJSResource) {
+        const stubResource = this.project.stubResource;
+        if(stubResource) {
             const text = this.createStub();
             const sep = targetDir.endsWith("/") ? "" : "/";
-            const targetFile = targetDir + sep + stubJSResource;
+            const targetFile = targetDir + sep + stubResource;
             fs.writeFileSync(targetFile, text);
         }
     }
@@ -115,7 +120,7 @@ export default class WidgetLibraryGenerator {
         const widgets = this.project.widgets.map( name => this.generateWidgetCode( name ), this);
         const texts = widgets.concat(this.declarations);
         const sep = targetDir.endsWith("/") ? "" : "/";
-        const targetFile = targetDir + sep + this.project.promptoResource;
+        const targetFile = targetDir + sep + this.project.codeResource;
         fs.writeFileSync(targetFile, texts.join("\n"));
     }
 
