@@ -8,6 +8,7 @@
 import { PropTypes, TypeProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
 import { default as ReactBootstrap } from 'react-bootstrap-4';
 
+const Any = propType => new TypeProperty("Any");
 const Boolean = propType => new TypeProperty("Boolean");
 const Text = propType => new TypeProperty("Text");
 const AnyCallback = propType => new TypeProperty("AnyCallback");
@@ -78,6 +79,9 @@ const HELPERS = {
     },
     "Navbar.Text" : BS_PREFIX_HELPER,
     "Toast.Body" : BS_PREFIX_HELPER,
+    OverlayTrigger : {
+        trigger: Any // TODO support inline enum array, was: <<"click", "hover", "focus">, <"click", "hover", "focus">[], null>
+    },
     ProgressBar : {
         children: propType => new TypeProperty("ProgressBar[]")
     }
@@ -86,8 +90,6 @@ const HELPERS = {
 const DECLARATIONS = [
     "abstract method CarouselEventCallback(Integer eventKey, Text direction);"
 ];
-
-
 
 const projectDir = "project/";
 const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS);
