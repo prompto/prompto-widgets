@@ -28,8 +28,15 @@ class ConvertedProps {
     toString() {
         return "{ " + this.names.map(name => {
             const prop = this.props.get(name);
-            return name + ": " + (prop ? prop.toString({}) : "null");
-        }).join(", ") + " }";
+            return this.nameToString(name) + ": " + (prop ? prop.toString({}) : "null");
+        }, this).join(", ") + " }";
+    }
+
+    nameToString(name) {
+        if(name.indexOf("-")<0)
+            return name;
+        else
+            return '"' + name + '"';
     }
 }
 
@@ -38,7 +45,7 @@ export default class WidgetGenerator {
 
     constructor(nativeName, klass, helpers) {
         this.nativeName = nativeName;
-        this.klass = klass;
+         this.klass = klass;
         this.helpers = helpers;
     }
 
@@ -54,7 +61,7 @@ export default class WidgetGenerator {
         if(!this.klass.propTypes && !missing)
             return null;
         const converter = new PropertyConverter(this.klass, this.helpers);
-        const namesFromKlass = this.klass.propTypes ? Object.getOwnPropertyNames(this.klass.propTypes) : [];
+        const namesFromKlass = this.klass.propTypes ? Object.getOwnPropertyNames(this.klass.propTypes).filter(name => !name.startsWith("_")) : [];
         const namesFromHelpers = missing ? Object.getOwnPropertyNames(missing) : [];
         const names = namesFromKlass.concat(namesFromHelpers).sort(); // sort to make tests predictable
         const props = new ConvertedProps(names);
