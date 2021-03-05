@@ -1,0 +1,25 @@
+{
+  "type" : "WEBLIBRARY",
+  "name" : "React-Bootstrap-3",
+  "version" : "1.0.3",
+  "migrateFrom" : "1.0.0",
+  "description" : "React Bootstrap 3 widgets",
+  "htmlEngine" : "react-16",
+  "codeResource" : "widgets.poc",
+  "stubResource" : "stub.js",
+  "javaScripts" : [ "main.js" ],
+  "styleSheets" : [ "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css",
+    "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" ],
+  "resources" : [
+    { "url": "main.js.map", "mimeType": "application/octet-stream" }
+  ],
+  "prefix" : "ReactBootstrap",
+  "widgets" : [ "Button",
+                "Navbar.Brand",
+                "InputGroup",
+                "InputGroup.Addon"
+              ],
+  "renamings" : {
+    "Button" : "XButton"
+  }
+}
