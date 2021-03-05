@@ -75,7 +75,8 @@ const HELPERS = {
     "Modal.Footer" : BS_PREFIX_HELPER,
     "Modal.Title" : BS_PREFIX_HELPER,
     Nav : {
-        justify: Boolean
+        justify: Boolean,
+        onSelect: AnyCallback
     },
     "Navbar.Text" : BS_PREFIX_HELPER,
     "Toast.Body" : BS_PREFIX_HELPER,
