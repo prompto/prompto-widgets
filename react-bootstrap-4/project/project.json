@@ -1,14 +1,14 @@
 {
   "type" : "WEBLIBRARY",
   "name" : "React-Bootstrap-4",
-  "version" : "1.0.0",
+  "version" : "1.0.1",
   "migrateFrom" : "1.0.0",
-  "description" : "React Bootstrap 4 widgets",
+  "description" : "Bootstrap 4 widgets",
   "htmlEngine" : "react-16",
   "codeResource" : "widgets.poc",
   "stubResource" : "stub.js",
   "styleSheets" : [ "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" ],
-  "javaScripts" : [ "main.js" ],
+  "javaScripts" : [ "https://unpkg.com/react-bootstrap@1.5.1/dist/react-bootstrap.min.js", "main.js" ],
   "resources" : [
       { "url": "main.js.map", "mimeType": "application/octet-stream" }
   ],
