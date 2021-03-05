@@ -36,6 +36,7 @@ export default class WidgetLibraryGenerator {
         const module = Object.assign({}, this.project);
         delete module.prefix;
         delete module.widgets;
+        delete module.renamings;
         const text = JSON.stringify(module);
         const sep = targetDir.endsWith("/") ? "" : "/";
         const projectFile = targetDir + sep + "module.json";
