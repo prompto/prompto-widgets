@@ -1,7 +1,7 @@
 {
   "type" : "WEBLIBRARY",
   "name" : "React-Bootstrap-4",
-  "version" : "1.0.2",
+  "version" : "1.0.3",
   "migrateFrom" : "1.0.0",
   "description" : "Bootstrap 4 widgets",
   "htmlEngine" : "react-16",
