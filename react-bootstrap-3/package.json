@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "babel": {
     "presets": [
       "@babel/preset-env",
@@ -6,30 +7,31 @@
     ]
   },
   "devDependencies": {
-    "ini": "1.3.8",
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.5",
     "bootstrap": "3.4.1",
+    "ini": "1.3.8",
+    "introspective-prop-types": "^0.0.4",
     "prop-types": "^15.7.2",
     "react": "^16.7.0",
-    "react-bootstrap": "0.31.5",
     "react-dom": "^16.7.0",
     "react-scripts": "^2.1.8",
     "webpack-cli": "^3.3.5"
   },
   "peerDependencies": {
     "react": "^16.7.0",
-    "react-bootstrap": "0.31.5",
+    "react-bootstrap": "0.33.1",
     "react-dom": "^16.7.0"
   },
   "dependencies": {
-    "react-bootstrap-typeahead": "3.4.2"
+    "react-bootstrap-typeahead": "4.2.3"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "webpack"
+    "build": "webpack --config webpack.config.cjs",
+    "generate": "node src/LibraryGenerator.js"
   },
   "browserslist": [
     ">0.2%",

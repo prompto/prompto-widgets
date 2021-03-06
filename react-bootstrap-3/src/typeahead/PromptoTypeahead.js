@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typeahead } from "react-bootstrap-typeahead";
 
-export default React.forwardRef((props, ref)=>{
+const forwardRef = React.forwardRef((props, ref)=>{
     const adjustedProps = { ...props };
     if(typeof(props.labelKey)==="string") {
         adjustedProps.labelKey = o => o[props.labelKey];
@@ -17,3 +17,9 @@ export default React.forwardRef((props, ref)=>{
     return <Typeahead ref={ref} {...adjustedProps}/>;
 
 });
+
+forwardRef.displayName = Typeahead.displayName;
+forwardRef.propTypes = Typeahead.propTypes;
+forwardRef.defaultProps = Typeahead.defaultProps;
+
+export default forwardRef;

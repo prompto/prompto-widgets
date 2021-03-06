@@ -27,7 +27,7 @@ export default class WidgetsPage extends React.Component {
     handleSelectChange(selected) {
         this.setState({selected: selected[0]}, ()=>{
             const typeahead = this.refs.typeahead;
-            typeahead && typeahead.getInstance().clear();
+            typeahead && typeahead.clear();
         });
     }
 
@@ -40,7 +40,7 @@ export default class WidgetsPage extends React.Component {
         const menuStyle = { position: "fixed", display: "block", left: 100, top: 100, zIndex: 999999 };
         const selected = this.state.selected ? this.state.selected.name : "";
         return <>
-                <FormGroup >
+                 <FormGroup >
                     <ControlLabel onContextMenu={this.handleContextMenu.bind(this)}>Label</ControlLabel>
                     <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
                 </FormGroup>
@@ -49,14 +49,14 @@ export default class WidgetsPage extends React.Component {
                     <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
                     <HelpBlock>{selected}</HelpBlock>
                 </FormGroup>
-            { this.state.contextMenu &&
-                <div style={menuStyle}>
-                    <ContextMenu>
-                        <MenuItem key={1}>Some stuff</MenuItem>
-                        <MenuItem key={2}>Other stuff</MenuItem>
-                    </ContextMenu>
-                </div>
-            }
+                { this.state.contextMenu &&
+                    <div style={menuStyle}>
+                        <ContextMenu>
+                            <MenuItem key={1}>Some stuff</MenuItem>
+                            <MenuItem key={2}>Other stuff</MenuItem>
+                        </ContextMenu>
+                    </div>
+                }
             </>
     }
 }

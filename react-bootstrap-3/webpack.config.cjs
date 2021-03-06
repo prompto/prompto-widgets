@@ -1,4 +1,5 @@
 var path = require('path');
+const target_dir = path.resolve(__dirname, "project/")
 
 process.env.NODE_ENV = 'production';
 
@@ -14,15 +15,16 @@ module.exports = {
         ]
     },
     output: {
-        filename: '../../../prompto-platform/Server/src/main/resources/js/widgets/react-bootstrap-3-widgets.js',
-        libraryTarget: 'umd'
+        path: target_dir,
+        filename: 'main.js'
     },
     node: {
         module: "empty",
         net: "empty",
         fs: "empty"
     },
-    mode: 'production',
+    mode: 'development',
+    devtool: "source-map",
     performance: {
         hints: false
     },
