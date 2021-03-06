@@ -22,16 +22,16 @@ export default class PropertyConverter {
         else if (this.helpers[name])
             return this.helpers[name](propType);
         else
-            return this.doConvertOne(propType);
+            return this.doConvertOne(propType, name);
     }
 
-    doConvertOne(propType) {
+    doConvertOne(propType, name) {
         const prop = PropertyConverter.convertTypeToProp(propType);
-        return prop ? this.makeRequired(prop, propType) : null;
+        return prop ? this.makeRequired(prop, propType, name) : null;
     }
 
-    makeRequired(prop, propType) {
-        if(propType.required)
+    makeRequired(prop, propType, name) {
+        if(propType.required && !this.defaultProps.hasOwnProperty(name))
             return new RequiredProperty(prop);
         else
             return prop;

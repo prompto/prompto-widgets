@@ -27,12 +27,13 @@ Widget.propTypes = {
     _objectOf: PropTypes.objectOf(PropTypes.string),
     _shape: PropTypes.shape({color: PropTypes.string, fontSize: PropTypes.number }),
     _exact: PropTypes.exact({color: PropTypes.string, fontSize: PropTypes.number }),
+    _required: PropTypes.bool.isRequired,
+    _default: PropTypes.bool.isRequired,
     onClick: PropTypes.func
 };
 
 Widget.defaultProps = {
-    _bool: false,
-    _type: 'button'
+    _default: false
 };
 
 it("converts an any property", () => {
@@ -131,8 +132,20 @@ it("converts an exact property", () => {
     expect(converted.toString()).toEqual("Any"); // TODO
 });
 
-it("converts an onClick property", () => {
+it("converts a helper property", () => {
     const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
     const converted = converter.convertOne("onClick");
     expect(converted.toString()).toEqual('ClickEventCallback');
+});
+
+it("converts a required property", () => {
+    const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
+    const converted = converter.convertOne("_required");
+    expect(converted.toString()).toEqual('{ type: Boolean, required: true }');
+});
+
+it("converts a default property", () => {
+    const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
+    const converted = converter.convertOne("_default");
+    expect(converted.toString()).toEqual('Boolean');
 });
