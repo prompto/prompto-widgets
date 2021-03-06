@@ -21,6 +21,7 @@ export const DEFAULT_HELPERS = {
     onBlur: propType => new TypeProperty("Callback"),
     onFocus: propType => new TypeProperty("Callback"),
     onError: propType => new TypeProperty("Callback"),
+    innerRef: propType => new TypeProperty("WidgetCallback"),
     ref: propType => new TypeProperty("WidgetCallback"),
     id: propType => new TypeProperty("Any")
 };

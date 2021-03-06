@@ -1,4 +1,5 @@
 import PropertyConverter from "./PropertyConverter.js";
+import { fetchPropTypesAndDefaultProps } from "../src/BackwardRef.js";
 
 const template =
 `native widget $promptoName$ {
@@ -58,10 +59,11 @@ export default class WidgetGenerator {
 
     convertProps() {
         const missing = this.helpers["%MISSING%"];
-        if(!this.klass.propTypes && !missing)
+        const klass = fetchPropTypesAndDefaultProps(this.klass);
+        if(!klass.propTypes && !missing)
             return null;
-        const converter = new PropertyConverter(this.klass, this.helpers);
-        const namesFromKlass = this.klass.propTypes ? Object.getOwnPropertyNames(this.klass.propTypes).filter(name => !name.startsWith("_")) : [];
+        const converter = new PropertyConverter(klass, this.helpers);
+        const namesFromKlass = klass.propTypes ? Object.getOwnPropertyNames(klass.propTypes).filter(name => !name.startsWith("_")) : [];
         const namesFromHelpers = missing ? Object.getOwnPropertyNames(missing) : [];
         const names = namesFromKlass.concat(namesFromHelpers).sort(); // sort to make tests predictable
         const props = new ConvertedProps(names);

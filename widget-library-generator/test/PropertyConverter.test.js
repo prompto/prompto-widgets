@@ -1,10 +1,10 @@
+import React from "react";
 import PropTypes from "introspective-prop-types";
 import PropertyConverter from "../src/PropertyConverter";
 import {DEFAULT_HELPERS} from "../src/DefaultHelpers";
+import { fetchPropTypesAndDefaultProps } from "../src/BackwardRef";
 
 class Widget {}
-
-class Control {}
 
 Widget.propTypes = {
     // atomic types
@@ -20,7 +20,7 @@ Widget.propTypes = {
     _symbol: PropTypes.symbol,
     _elementType: PropTypes.elementType,
     // composed types
-    _instanceOf: PropTypes.instanceOf(Control),
+    _instanceOf: PropTypes.instanceOf(React.Component),
     _oneOf: PropTypes.oneOf(['button', 'reset', 'submit']),
     _oneOfType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     _arrayOf: PropTypes.arrayOf(PropTypes.string),
@@ -35,6 +35,20 @@ Widget.propTypes = {
 Widget.defaultProps = {
     _default: false
 };
+
+class Control extends React.Component { render() { return null; } }
+
+class Wrapped extends React.Component { render() { return null; } }
+Wrapped.displayName = "Wrapped";
+Wrapped.propTypes = { _bool: PropTypes.bool };
+Wrapped.defaultProps = { _bool: true };
+
+const Forwarded = React.forwardRef((props, ref) => React.createElement(Wrapped, Object.assign(props, { ref: ref })));
+Forwarded.displayName = Wrapped.displayName;
+Forwarded.propTypes = Wrapped.propTypes;
+Forwarded.defaultProps = Wrapped.defaultProps;
+
+const Ugly = React.forwardRef((props, ref) => React.createElement(Wrapped, Object.assign(props, { ref: ref })));
 
 it("converts an any property", () => {
     const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
@@ -148,4 +162,25 @@ it("converts a default property", () => {
     const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
     const converted = converter.convertOne("_default");
     expect(converted.toString()).toEqual('Boolean');
+});
+
+it("supports components with no propTypes", () => {
+    const klass = fetchPropTypesAndDefaultProps(Control);
+    const converter = new PropertyConverter(klass, DEFAULT_HELPERS);
+    const converted = converter.convertOne("ref");
+    expect(converted).toBeNull();
+});
+
+it("reads props from nice forwardRefs", () => {
+    const klass = fetchPropTypesAndDefaultProps(Forwarded);
+    const converter = new PropertyConverter(klass, DEFAULT_HELPERS);
+    const converted = converter.convertOne("_bool");
+    expect(converted.toString()).toEqual("Boolean");
+});
+
+it("reads props from ugly forwardRefs", () => {
+    const klass = fetchPropTypesAndDefaultProps(Ugly);
+    const converter = new PropertyConverter(klass, DEFAULT_HELPERS);
+    const converted = converter.convertOne("_bool");
+    expect(converted.toString()).toEqual("Boolean");
 });
