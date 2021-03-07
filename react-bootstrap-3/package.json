@@ -18,7 +18,8 @@
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-scripts": "^2.1.8",
-    "webpack-cli": "^3.3.5"
+    "webpack-cli": "^3.3.5",
+    "widget-library-generator": "^1.0.0"
   },
   "peerDependencies": {
     "react": "^16.7.0",
