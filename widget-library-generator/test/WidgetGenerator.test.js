@@ -10,7 +10,7 @@ function purify(value) {
 it("generates a Button widget", () => {
     const generator = new WidgetGenerator("Button", Button, DEFAULT_HELPERS);
     let generated = generator.generate("Button", "ReactBootstrap.Button");
-    let expected = `@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: <"lg", "large", "sm", "small", "xs", "xsmall", null>, bsStyle: <"success", "warning", "danger", "info", "default", "primary", "link", null>, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: <"button", "reset", "submit", null> })
+    let expected = `@WidgetProperties({ active: Boolean, block: Boolean, bsClass: Text, bsSize: <"lg", "large", "sm", "small", "xs", "xsmall">, bsStyle: <"success", "warning", "danger", "info", "default", "primary", "link">, componentClass: Text, disabled: Boolean, href: Text, onClick: ClickEventCallback, type: <"button", "reset", "submit"> })
 native widget Button {
 
     category bindings {

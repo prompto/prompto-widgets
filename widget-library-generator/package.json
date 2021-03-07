@@ -15,7 +15,7 @@
     "babel-loader": "^8.2.2",
     "jest": "^26.6.3",
     "react": "16",
-    "react-bootstrap": "0.31.5",
+    "react-bootstrap": "0.33.1",
     "react-dom": "16"
   },
   "dependencies": {

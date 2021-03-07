@@ -113,13 +113,13 @@ it("converts an instanceOf property", () => {
 it("converts a oneOf property", () => {
     const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
     const converted = converter.convertOne("_oneOf");
-    expect(converted.toString()).toEqual('<"button", "reset", "submit", null>');
+    expect(converted.toString()).toEqual('<"button", "reset", "submit">');
 });
 
 it("converts a oneOfType property", () => {
     const converter = new PropertyConverter(Widget, DEFAULT_HELPERS);
     const converted = converter.convertOne("_oneOfType");
-    expect(converted.toString()).toEqual('<Text, Integer, null>');
+    expect(converted.toString()).toEqual('<Text, Integer>');
 });
 
 it("converts an arrayOf property", () => {

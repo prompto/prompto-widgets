@@ -9,9 +9,7 @@ export default class TypeSetProperty extends SetProperty {
     }
 
     toString(options) {
-        const appendNull = this.mustAppendNull(options);
-        const types = appendNull ? this.types.concat([null]) : this.types;
-        return "<" + types.map(type => type ? type.toString({asElement: true}) : "null").join(", ") + ">";
+        return "<" + this.types.map(type => type ? type.toString({asElement: true}) : "null").join(", ") + ">";
     }
 
 }

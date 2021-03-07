@@ -7,9 +7,7 @@ export default class ValueSetProperty extends SetProperty {
     }
 
     toString(options) {
-        const appendNull = this.mustAppendNull(options);
-        const values = appendNull ? this.values.concat([null]) : this.values;
-        return "<" + values.map(this.valueToString).join(", ") + ">";
+        return "<" + this.values.map(this.valueToString).join(", ") + ">";
     }
 
     valueToString(value) {

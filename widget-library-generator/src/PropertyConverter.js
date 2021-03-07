@@ -1,11 +1,14 @@
-import PropTypes from "introspective-prop-types";
-import * as PropTypesExtra from "prop-types-extra";
+import PropTypes, { PropTypesExtra } from "introspective-prop-types";
 import TypeProperty from "./TypeProperty.js";
 import RequiredProperty from "./RequiredProperty.js";
 import ValueSetProperty from "./ValueSetProperty.js";
 import TypeSetProperty from "./TypeSetProperty.js";
 import ArrayTypeProperty from "./ArrayTypeProperty.js";
 import ObjectTypeProperty from "./ObjectTypeProperty.js";
+
+function isArrayOfNull(value) {
+    return Array.isArray(value) && value.every(v => v===null);
+}
 
 export default class PropertyConverter {
 
@@ -26,7 +29,7 @@ export default class PropertyConverter {
     }
 
     doConvertOne(propType, name) {
-        const prop = PropertyConverter.convertTypeToProp(propType);
+        const prop = PropertyConverter.convertTypeToProp(propType, name);
         return prop ? this.makeRequired(prop, propType, name) : null;
     }
 
@@ -37,7 +40,7 @@ export default class PropertyConverter {
             return prop;
     }
 
-    static convertTypeToProp(propType) {
+    static convertTypeToProp(propType, name) {
         if(propType === PropTypes.any  || propType.type === "any")
             return new TypeProperty("Any");
         else if(propType === PropTypes.array  || propType.type === "array")
@@ -60,11 +63,17 @@ export default class PropertyConverter {
             return new TypeProperty("Any");
         else if(propType === PropTypes.elementType || propType === PropTypesExtra.elementType || propType.type === "elementType")
             return new TypeProperty("Text");
+        else if(propType === PropTypesExtra.componentOrElement || propType.type === "componentOrElement")
+            return new TypeProperty("Text");
         else if(propType.type === "instanceOf")
             return new TypeProperty("Any"); // TODO for now (could create a new syntax for "is a")
-        else if(propType.type === "oneOf")
-            return new ValueSetProperty(propType.arg);
-        else if(propType.type === "oneOfType")
+        else if(propType.type === "oneOf") {
+            // workaround weird hack in React Overlay
+            if(isArrayOfNull(propType.arg))
+                return null;
+            else
+                return new ValueSetProperty(propType.arg);
+        } else if(propType.type === "oneOfType")
             return new TypeSetProperty(propType.arg);
         else if(propType.type === "arrayOf")
             return new ArrayTypeProperty(propType.arg);
@@ -75,7 +84,7 @@ export default class PropertyConverter {
         else if(propType.type === "exact")
             return new TypeProperty("Any"); // TODO for now (could create an inline type)
         else
-            return null;
+            throw new Error("Unsupported property type: " + propType.type + " for property: " + name);
     }
 
 }

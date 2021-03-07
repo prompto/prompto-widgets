@@ -27,9 +27,11 @@ class ConvertedProps {
     }
 
     toString() {
-        return "{ " + this.names.map(name => {
+        // use names array to produce predictable output
+        const names = this.names.filter(name => this.props.has(name));
+        return "{ " + names.map(name => {
             const prop = this.props.get(name);
-            return this.nameToString(name) + ": " + (prop ? prop.toString({}) : "null");
+            return this.nameToString(name) + ": " + prop.toString({});
         }, this).join(", ") + " }";
     }
 
@@ -68,11 +70,13 @@ export default class WidgetGenerator {
         const names = namesFromKlass.concat(namesFromHelpers).sort(); // sort to make tests predictable
         const props = new ConvertedProps(names);
         namesFromKlass.forEach(name => {
-            const prop = converter.convertOne(name);
-            if(prop)
-                props.set(name, prop);
-            else
-                console.error("Could not convert property: " + name + " of widget " + this.nativeName);
+            try {
+                const prop = converter.convertOne(name);
+                if(prop)
+                    props.set(name, prop);
+            } catch(e) {
+                console.error("Could not convert property: " + name + " of widget " + this.nativeName + ", error: " + e.message);
+            }
         });
         namesFromHelpers.forEach(name => props.set(name,  missing[name]()));
         return props;
