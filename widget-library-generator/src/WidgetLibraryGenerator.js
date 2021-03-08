@@ -4,11 +4,12 @@ import {DEFAULT_HELPERS} from "./DefaultHelpers.js";
 
 export default class WidgetLibraryGenerator {
 
-    constructor(projectDir, globals, helpers, declarations) {
+    constructor(projectDir, globals, helpers, declarations, classResolver) {
         this.projectDir = projectDir;
         this.globals = globals;
         this.helpers = helpers;
         this.declarations = declarations || [];
+        this.classResolver = classResolver || null;
     }
 
     generateLibrary(targetDir) {
@@ -127,8 +128,10 @@ export default class WidgetLibraryGenerator {
 
     generateWidgetCode(nativeName) {
         const helpers = this.getHelpers(nativeName);
-        const klass = this.loadClass(this.globals, nativeName);
+        let klass = this.loadClass(this.globals, nativeName);
         if(klass) {
+            if(this.classResolver)
+                klass = this.classResolver(klass);
             const generator = new WidgetGenerator(nativeName, klass, helpers);
             const renamings = this.project.renamings || {};
             const promptoName = renamings[nativeName] || nativeName.replace(/\./g, "");
