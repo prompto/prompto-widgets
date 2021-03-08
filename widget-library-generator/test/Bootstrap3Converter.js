@@ -1,7 +1,11 @@
 import "../src/PropTypesPatcher.js";
 import PropertyConverter from "../src/PropertyConverter.js";
-import { OverlayTrigger } from "react-bootstrap";
+import { OverlayTrigger, Navbar } from "react-bootstrap";
 
-const converter = new PropertyConverter(OverlayTrigger);
-const converted = converter.convertOne("animation");
-console.log(converted.toString());
+let converter = new PropertyConverter(OverlayTrigger);
+let converted = converter.convertOne("animation");
+console.log("OverlayTrigger.animation : " + converted.toString());
+
+converter = new PropertyConverter(Navbar.ControlledComponent);
+converted = converter.convertOne("fluid");
+console.log("Navbar.fluid : " + converted.toString());
