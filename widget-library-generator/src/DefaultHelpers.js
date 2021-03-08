@@ -23,6 +23,6 @@ export const DEFAULT_HELPERS = {
     onError: propType => new TypeProperty("Callback"),
     innerRef: propType => new TypeProperty("WidgetCallback"),
     ref: propType => new TypeProperty("WidgetCallback"),
-    id: propType => new TypeProperty("Any")
+    id: propType => new TypeProperty("Text")
 };
 
