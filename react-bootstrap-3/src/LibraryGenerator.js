@@ -15,6 +15,7 @@ const Boolean = propType => new TypeProperty("Boolean");
 const Text = propType => new TypeProperty("Text");
 const Date = propType => new TypeProperty("Date");
 const Html = propType => new TypeProperty("Html");
+const Htmls = propType => new TypeProperty("Html[]");
 const Document = propType => new TypeProperty("Document");
 const Callback = propType => new TypeProperty("Callback");
 const AnyCallback = propType => new TypeProperty("AnyCallback");
@@ -74,7 +75,7 @@ const HELPERS = {
         trigger: Any // TODO support inline enum array, was: <<"click", "hover", "focus">, <"click", "hover", "focus">[], null>
     },
     ProgressBar : {
-        children: Html
+        children: Htmls
     },
     Panel: {
         onToggle: ToggleChangedCallback
@@ -104,7 +105,8 @@ const HELPERS = {
     },
     Dropdown: {
         onToggle: AnyCallback, // function(Boolean isOpen, Object event, { String source }) {}
-        onSelect: ItemSelectedCallback
+        onSelect: ItemSelectedCallback,
+        children: Htmls
     },
     FormControl: {
         inputRef: WidgetCallback
@@ -148,6 +150,21 @@ ReactBootstrap.Navbar.propTypes.onSelect = PropTypes.func;
 ReactBootstrap.Tabs.propTypes.onSelect = PropTypes.func;
 ReactBootstrap.Pagination.propTypes.onSelect = PropTypes.func;
 
+function classResolver(klass) {
+    // react-bootsrap uses 'uncontrollable'
+    const wrapped = klass.ControlledComponent || null;
+    if(wrapped) {
+        // copy missing props
+        ["onChange", "onSelect", "onToggle"].forEach(name => {
+            const prop = klass.propTypes[name];
+            if(prop)
+                wrapped.propTypes[name] = prop;
+        })
+        return wrapped;
+    } else
+        return klass;
+}
+
 const projectDir = "project/";
 if(typeof window === 'undefined') {
     global["window"] = {};
@@ -156,7 +173,7 @@ if(typeof window === 'undefined') {
     global["PropTypes"] = PropTypes;
     global["ReactBootstrap"] = ReactBootstrap;
     import('../project/main.js').then(() => {
-            const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS);
+            const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS, classResolver);
             generator.generateLibrary("library/");
         }
     )
