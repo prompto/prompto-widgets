@@ -5,7 +5,7 @@
 // this will publish the patched react-bootstrap package on your box
 // then from this project, run 'npm link widget-library-generator react-bootstrap'
 
-import { PropTypes, TypeProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
+import { PropTypes, TypeProperty, TypeSetProperty, ValueSetProperty, RequiredProperty, WidgetLibraryGenerator } from 'widget-library-generator';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { default as ReactBootstrap } from 'react-bootstrap';
@@ -26,14 +26,6 @@ const DateChangedCallback = propType => new TypeProperty("DateChangedCallback");
 const ToggleChangedCallback = propType => new TypeProperty("ToggleChangedCallback");
 const ItemSelectedCallback = propType => new TypeProperty("ItemSelectedCallback");
 
-/* workaround issue where BS4 components created via createWithBsPrefix do not have propTypes */
-const BS_PREFIX_HELPER = {
-    "%MISSING%": {
-        as: Text,
-        bsPrefix: Text
-    }
-};
-
 const HELPERS = {
     "*": {
         componentClass: Text,
@@ -46,7 +38,8 @@ const HELPERS = {
         activeKey: Any,
         defaultActiveKey: Any,
         value: Any,
-        defaultValue: Any
+        defaultValue: Any,
+        onSelect: ItemSelectedCallback
     },
     Modal: {
         onEscapeKeyUp: Callback,
@@ -54,8 +47,7 @@ const HELPERS = {
         container: Any
     },
     MenuItem: {
-        divider: Boolean,
-        onSelect: ItemSelectedCallback
+        divider: Boolean
     },
     ButtonGroup: {
         block: Boolean
@@ -65,11 +57,21 @@ const HELPERS = {
         defaultValue: Date,
         value: Date,
         onChange: DateChangedCallback,
-        maxDate: Date
+        maxDate: Date,
+        dayLabels: propType => new TypeProperty("Text[]"),
+        monthLabels: propType => new TypeProperty("Text[]")
     },
     Typeahead: {
         inputProps: Document,
-        bsSize:   propType => new ValueSetProperty(['large', 'lg', 'sm', 'small'])
+        bsSize: propType => new ValueSetProperty(['large', 'lg', 'sm', 'small']),
+        caseSensitive: Boolean,
+        defaultInputValue: Text,
+        highlightOnlyResult: Boolean,
+        ignoreDiacritics: Boolean,
+        labelKey: propType => new TypeSetProperty(["Text", "TypeaheadLabelCallback"], true),
+        selected: propType => new TypeSetProperty(["Text[]", "Any[]"], true),
+        onChange: propType => new TypeProperty("TypeaheadSelectionChangedCallback"),
+        onIputChange: propType => new TypeProperty("InputChangedEventCallback")
     },
     OverlayTrigger : {
         trigger: Any // TODO support inline enum array, was: <<"click", "hover", "focus">, <"click", "hover", "focus">[], null>
@@ -80,32 +82,14 @@ const HELPERS = {
     Panel: {
         onToggle: ToggleChangedCallback
     },
-    PanelGroup: {
-        onSelect: ItemSelectedCallback
-    },
     Navbar: {
-        onToggle: ToggleChangedCallback,
-        onSelect: ItemSelectedCallback
-    },
-    NavItem: {
-        onSelect: ItemSelectedCallback
+        onToggle: ToggleChangedCallback
     },
     Nav: {
-        justified: Boolean,
-        onSelect: ItemSelectedCallback
-    },
-    Tabs: {
-        onSelect: ItemSelectedCallback
-    },
-    DropdownMenu: {
-        onSelect: ItemSelectedCallback
-    },
-    Pagination: {
-        onSelect: ItemSelectedCallback
+        justified: Boolean
     },
     Dropdown: {
         onToggle: AnyCallback, // function(Boolean isOpen, Object event, { String source }) {}
-        onSelect: ItemSelectedCallback,
         children: Htmls
     },
     FormControl: {
@@ -122,36 +106,30 @@ const HELPERS = {
     },
     ToggleButton: {
         onChange: AnyCallback
-    },
-    Carousel :{
-        onSelect: ItemSelectedCallback
     }
-
 };
 
 const DECLARATIONS = [
 `native method clearTypeahead (Any typeahead) {
     JavaScript: typeahead.clear();
 }
+`,
+`abstract Text method TypeaheadLabelCallback(Any value);
+`,
+`abstract method TypeaheadSelectionChangedCallback(Any[] values);
 `
 ];
 
+// add missing propTypes
 ReactBootstrap.FormControl.propTypes.onChange = PropTypes.func;
-ReactBootstrap.ToggleButtonGroup.propTypes.onChange = PropTypes.func;
-
-ReactBootstrap.Dropdown.propTypes.onToggle = PropTypes.func;
-ReactBootstrap.Panel.propTypes.onToggle = PropTypes.func;
-
-ReactBootstrap.Dropdown.propTypes.onSelect = PropTypes.func;
 ReactBootstrap.Panel.propTypes.onSelect = PropTypes.func;
-ReactBootstrap.PanelGroup.propTypes.onSelect = PropTypes.func;
-ReactBootstrap.Navbar.propTypes.onToggle = PropTypes.func;
-ReactBootstrap.Navbar.propTypes.onSelect = PropTypes.func;
-ReactBootstrap.Tabs.propTypes.onSelect = PropTypes.func;
 ReactBootstrap.Pagination.propTypes.onSelect = PropTypes.func;
+// fix wrapped propTypes issue
+ReactBootstrap.NavDropdown.propTypes = Object.assign({}, ReactBootstrap.Dropdown.ControlledComponent.propTypes, ReactBootstrap.NavDropdown.propTypes);
 
+// fix wrapped component issue
 function classResolver(klass) {
-    // react-bootsrap uses 'uncontrollable'
+    // react-bootstrap 3 uses 'uncontrollable'
     const wrapped = klass.ControlledComponent || null;
     if(wrapped) {
         // copy missing props
