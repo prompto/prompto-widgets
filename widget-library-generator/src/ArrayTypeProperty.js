@@ -8,7 +8,8 @@ export default class ArrayTypeProperty {
     }
 
     toString(options) {
-        return (this.prop ? this.prop.toString(options) : "Any") + "[]";
+        options = options ? Object.assign({}, options, { array: true }) : { array: true };
+        return this.prop ? this.prop.toString(options) : "Any[]";
     }
 
 }

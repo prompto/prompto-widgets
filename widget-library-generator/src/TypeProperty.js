@@ -5,9 +5,10 @@ export default class TypeProperty {
     }
 
     toString(options) {
+        const name = this.name + (options && options.array ? "[]" : "");
         if(options && options.required && !options.asElement)
-            return "{ type: " + this.name + ", required: true }";
+            return "{ type: " + name + ", required: true }";
         else
-            return this.name;
+            return name;
     }
 }
