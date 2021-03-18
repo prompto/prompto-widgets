@@ -5,7 +5,7 @@
 // this will publish the patched react-bootstrap package on your box
 // then from this project, run 'npm link widget-library-generator react-bootstrap'
 
-import { PropTypes, TypeProperty, TypeSetProperty, ValueSetProperty, RequiredProperty, WidgetLibraryGenerator } from 'widget-library-generator';
+import { PropTypes, TypeProperty, TypeSetProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { default as ReactBootstrap } from 'react-bootstrap';
