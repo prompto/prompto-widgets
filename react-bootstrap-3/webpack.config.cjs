@@ -23,7 +23,7 @@ module.exports = {
         net: "empty",
         fs: "empty"
     },
-    mode: 'development',
+    mode: 'production',
     devtool: "source-map",
     performance: {
         hints: false
@@ -38,6 +38,5 @@ module.exports = {
         StrictSet: 'StrictSet',
         NativeError: 'NativeError',
         Utils: 'Utils'
-
     }
 };
