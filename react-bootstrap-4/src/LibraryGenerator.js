@@ -5,15 +5,19 @@
 // this will publish the patched react-bootstrap package on your box
 // then from this project, run 'npm link widget-library-generator react-bootstrap'
 
-import { PropTypes, TypeProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
+import { PropTypes, TypeProperty, TypeSetProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
+import React from 'react';
+import ReactDOM from "react-dom";
 import { default as ReactBootstrap } from 'react-bootstrap-4';
 
 const Any = propType => new TypeProperty("Any");
 const Boolean = propType => new TypeProperty("Boolean");
 const Text = propType => new TypeProperty("Text");
+const Document = propType => new TypeProperty("Document");
 const AnyCallback = propType => new TypeProperty("AnyCallback");
 const BooleanCallback = propType => new TypeProperty("BooleanCallback");
 const IntegerCallback = propType => new TypeProperty("IntegerCallback");
+const DateChangedCallback = propType => new TypeProperty("DateChangedCallback");
 const CarouselEventCallback = propType => new TypeProperty("CarouselEventCallback");
 
 /* workaround issue where BS4 components created via createWithBsPrefix do not have propTypes */
@@ -85,13 +89,68 @@ const HELPERS = {
     },
     ProgressBar : {
         children: propType => new TypeProperty("ProgressBar[]")
+    },
+    DatePicker: {
+        minDate: Date,
+        defaultValue: Date,
+        value: Date,
+        onChange: DateChangedCallback,
+        maxDate: Date,
+        dayLabels: propType => new TypeProperty("Text[]"),
+        monthLabels: propType => new TypeProperty("Text[]")
+    },
+    Typeahead: {
+        inputProps: Document,
+        bsSize: propType => new ValueSetProperty(['large', 'lg', 'sm', 'small']),
+        caseSensitive: Boolean,
+        defaultInputValue: Text,
+        highlightOnlyResult: Boolean,
+        ignoreDiacritics: Boolean,
+        labelKey: propType => new TypeSetProperty(["Text", "TypeaheadLabelCallback"], true),
+        selected: propType => new TypeSetProperty(["Text[]", "Any[]"], true),
+        onChange: propType => new TypeProperty("TypeaheadSelectionChangedCallback"),
+        onIputChange: propType => new TypeProperty("InputChangedEventCallback")
     }
 };
 
 const DECLARATIONS = [
-    "abstract method CarouselEventCallback(Integer eventKey, Text direction);"
+    "abstract method CarouselEventCallback(Integer eventKey, Text direction);",
+    `native method clearTypeahead (Any typeahead) {
+    JavaScript: typeahead.clear();
+}
+`,
+    `abstract Text method TypeaheadLabelCallback(Any value);
+`,
+    `abstract method TypeaheadSelectionChangedCallback(Any[] values);
+`
 ];
 
+// fix wrapped component issue
+function classResolver(klass) {
+    // react-bootstrap 3 uses 'uncontrollable'
+    const wrapped = klass.ControlledComponent || null;
+    if(wrapped) {
+        // copy missing props
+        ["onChange", "onSelect", "onToggle"].forEach(name => {
+            const prop = klass.propTypes[name];
+            if(prop)
+                wrapped.propTypes[name] = prop;
+        })
+        return wrapped;
+    } else
+        return klass;
+}
+
 const projectDir = "project/";
-const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS);
-generator.generateLibrary("library/");
+if(typeof window === 'undefined') {
+    global["window"] = {};
+    global["React"] = React;
+    global["ReactDOM"] = ReactDOM;
+    global["PropTypes"] = PropTypes;
+    global["ReactBootstrap"] = ReactBootstrap;
+    import('../project/main.js').then(() => {
+            const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS, classResolver);
+            generator.generateLibrary("library/");
+        }
+    )
+}

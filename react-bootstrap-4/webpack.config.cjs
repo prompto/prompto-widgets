@@ -16,8 +16,7 @@ module.exports = {
     },
     output: {
         path: target_dir,
-        filename: 'main.js',
-        libraryTarget: 'umd'
+        filename: 'main.js'
     },
     node: {
         module: "empty",

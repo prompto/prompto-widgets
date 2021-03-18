@@ -1,7 +1,7 @@
 {
   "type" : "WEBLIBRARY",
   "name" : "React-Bootstrap-4",
-  "version" : "1.0.8",
+  "version" : "1.0.9",
   "migrateFrom" : "1.0.0",
   "description" : "Bootstrap 4 widgets",
   "htmlEngine" : "react-16",
@@ -124,7 +124,10 @@
     "Toast.Body",
     "ToggleButton",
     "ToggleButtonGroup",
-    "Tooltip"
+    "Tooltip",
+    "ContextMenu",
+    "DatePicker",
+    "Typeahead"
   ],
   "renamings": {
     "Image": "Imager"
