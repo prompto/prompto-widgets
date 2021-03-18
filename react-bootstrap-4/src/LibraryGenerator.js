@@ -13,6 +13,7 @@ import { default as ReactBootstrap } from 'react-bootstrap-4';
 const Any = propType => new TypeProperty("Any");
 const Boolean = propType => new TypeProperty("Boolean");
 const Text = propType => new TypeProperty("Text");
+const Date = propType => new TypeProperty("Date");
 const Document = propType => new TypeProperty("Document");
 const AnyCallback = propType => new TypeProperty("AnyCallback");
 const BooleanCallback = propType => new TypeProperty("BooleanCallback");
