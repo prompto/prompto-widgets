@@ -1,6 +1,4 @@
 npm install webpack -g
 npm install webpack-cli -g
 npm install yarn
-npm install --save-dev @babel/core @babel/preset-env
-npm install --save-dev babel-loader
-npm install --save-dev @babel/preset-react
+yarn install
