@@ -203,7 +203,8 @@ export default class AcePromptoEditor extends React.Component {
             const resource = edited.resource;
             resource.$mutable = true;
             const category = resource.$storable.category;
-            resource.$storable = window.$DataStore.instance.newStorableDocument(category, resource.dbIdListener.bind(resource));
+            const dbIdFactory = { provider: resource.getDbId.bind(resource), listener: resource.setDbId.bind(resource) };
+            resource.$storable = window.$DataStore.instance.newStorableDocument(category, dbIdFactory);
             resource.getAttributeNames().forEach(name => {
                 const isEnum = resource[name] && resource[name].name && resource[name].name === resource[name].value;
                 resource.setMember(name, resource[name], true, true, isEnum);
