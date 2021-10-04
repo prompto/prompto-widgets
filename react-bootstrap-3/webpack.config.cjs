@@ -33,6 +33,7 @@ module.exports = {
         'react-dom': 'ReactDOM',
         'react-bootstrap': 'ReactBootstrap',
         'prop-types': 'PropTypes',
+        'prop-types-extra': 'PropTypesExtra',
         LocalDate: 'LocalDate',
         List: 'List',
         StrictSet: 'StrictSet',

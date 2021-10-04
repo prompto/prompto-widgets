@@ -5,7 +5,8 @@
 // this will publish the patched react-bootstrap package on your box
 // then from this project, run 'npm link widget-library-generator react-bootstrap'
 
-import { PropTypes, TypeProperty, TypeSetProperty, ValueSetProperty, WidgetLibraryGenerator } from 'widget-library-generator';
+import * as WLG from 'widget-library-generator';
+const { PropTypes, PropTypesExtra, TypeProperty, TypeSetProperty, ValueSetProperty, WidgetLibraryGenerator } = WLG;
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { default as ReactBootstrap } from 'react-bootstrap';
@@ -25,10 +26,15 @@ const WidgetCallback = propType => new TypeProperty("WidgetCallback");
 const DateChangedCallback = propType => new TypeProperty("DateChangedCallback");
 const ToggleChangedCallback = propType => new TypeProperty("ToggleChangedCallback");
 const ItemSelectedCallback = propType => new TypeProperty("ItemSelectedCallback");
+const ReactWidget = propType => new TypeProperty("ReactWidget");
+
+/* fix miising properties due to usage of uncontrollable */
+
+ReactBootstrap.DropdownButton.propTypes = { ...ReactBootstrap.Dropdown.ControlledComponent.propTypes, ...ReactBootstrap.DropdownButton.propTypes };
 
 const HELPERS = {
     "*": {
-        componentClass: Text,
+        componentClass: ReactWidget,
         expanded: Boolean,
         defaultExpanded: Boolean,
         transition: Text,
@@ -149,6 +155,7 @@ if(typeof window === 'undefined') {
     global["React"] = React;
     global["ReactDOM"] = ReactDOM;
     global["PropTypes"] = PropTypes;
+    global["PropTypesExtra"] = PropTypesExtra;
     global["ReactBootstrap"] = ReactBootstrap;
     import('../project/main.js').then(() => {
             const generator = new WidgetLibraryGenerator(projectDir, ReactBootstrap, HELPERS, DECLARATIONS, classResolver);
