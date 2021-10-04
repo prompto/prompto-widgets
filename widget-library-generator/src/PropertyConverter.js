@@ -1,4 +1,5 @@
 import PropTypes, { PropTypesExtra } from "introspective-prop-types";
+
 import TypeProperty from "./TypeProperty.js";
 import RequiredProperty from "./RequiredProperty.js";
 import ValueSetProperty from "./ValueSetProperty.js";

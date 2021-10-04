@@ -1,10 +1,11 @@
-var path = require('path');
-const target_dir = path.resolve(__dirname, "project/")
+const path = require('path');
+const nodeExternals = require('webpack-node-externals');
 
 process.env.NODE_ENV = 'production';
 
 module.exports = {
     entry: './src/index.js',
+    target: "node",
     module: {
         rules: [
             {
@@ -15,22 +16,13 @@ module.exports = {
         ]
     },
     output: {
-        path: target_dir,
-        filename: 'main.js'
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'index.js'
     },
-    node: {
-        module: "empty",
-        net: "empty",
-        fs: "empty"
-    },
-    mode: 'production',
+    externals: [nodeExternals()],
+    mode: 'development',
     devtool: "source-map",
     performance: {
         hints: false
-    },
-    externals: {
-        'react': 'React',
-        'react-dom': 'ReactDOM',
-        'prop-types': 'PropTypes'
     }
 };

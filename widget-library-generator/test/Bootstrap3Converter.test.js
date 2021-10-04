@@ -1,6 +1,6 @@
 import "../src/PropTypesPatcher";
 import PropertyConverter from "../src/PropertyConverter";
-import { Button, Col, OverlayTrigger } from "react-bootstrap";
+import { Button, Col, OverlayTrigger, Dropdown, DropdownButton } from "react-bootstrap";
 
 const secret = "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED";
 
@@ -29,7 +29,8 @@ it("converts a property with helper", () => {
 });
 
 it("converts an elementType property", () => {
-    const converter = new PropertyConverter(Button);
+    DropdownButton.propTypes = { ...Dropdown.ControlledComponent.propTypes, ...DropdownButton.propTypes };
+    const converter = new PropertyConverter(DropdownButton);
     const converted = converter.convertOne("componentClass");
     expect(converted.toString()).toEqual('Text');
 });
