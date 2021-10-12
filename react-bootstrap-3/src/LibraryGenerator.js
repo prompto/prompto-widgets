@@ -26,7 +26,6 @@ const WidgetCallback = propType => new TypeProperty("WidgetCallback");
 const DateChangedCallback = propType => new TypeProperty("DateChangedCallback");
 const ToggleChangedCallback = propType => new TypeProperty("ToggleChangedCallback");
 const ItemSelectedCallback = propType => new TypeProperty("ItemSelectedCallback");
-const ReactWidget = propType => new TypeProperty("ReactWidget");
 
 /* fix miising properties due to usage of uncontrollable */
 
@@ -34,7 +33,8 @@ ReactBootstrap.DropdownButton.propTypes = { ...ReactBootstrap.Dropdown.Controlle
 
 const HELPERS = {
     "*": {
-        componentClass: ReactWidget,
+        children: Htmls,
+        componentClass: propType => new TypeSetProperty(["Text", "Type<ReactWidget>"], true),
         expanded: Boolean,
         defaultExpanded: Boolean,
         transition: Text,
@@ -95,8 +95,7 @@ const HELPERS = {
         justified: Boolean
     },
     Dropdown: {
-        onToggle: AnyCallback, // function(Boolean isOpen, Object event, { String source }) {}
-        children: Htmls
+        onToggle: AnyCallback // function(Boolean isOpen, Object event, { String source }) {}
     },
     FormControl: {
         inputRef: WidgetCallback
@@ -130,7 +129,7 @@ const DECLARATIONS = [
 ReactBootstrap.FormControl.propTypes.onChange = PropTypes.func;
 ReactBootstrap.Panel.propTypes.onSelect = PropTypes.func;
 ReactBootstrap.Pagination.propTypes.onSelect = PropTypes.func;
-// fix wrapped propTypes issue
+// fix missing wrapped propTypes issue
 ReactBootstrap.NavDropdown.propTypes = Object.assign({}, ReactBootstrap.Dropdown.ControlledComponent.propTypes, ReactBootstrap.NavDropdown.propTypes);
 
 // fix wrapped component issue
