@@ -1,5 +1,5 @@
 const ace = window.ace;
-
+/* eslint-disable import/no-webpack-loader-syntax */
 /*
 ace.config.setModuleUrl(
     "ace/ext/beautify",
