@@ -3,3 +3,11 @@
     position: absolute;
     z-index: 20;
 }
+
+.change-viewer {
+    position: absolute;
+}
+
+.ace_hidden-cursors {
+    opacity:0
+}

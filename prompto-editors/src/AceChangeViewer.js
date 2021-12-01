@@ -1,19 +1,83 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { diff as DiffEditor, split as SplitEditor } from "react-ace";
 const Diff = require("diff");
+
+const Canvas = props => {
+
+    const canvasRef = useRef(null);
+
+    const topOfLine = (editor, line) => {
+        return (line - 1) * editor.renderer.lineHeight;
+    };
+
+    const bottomOfLine = (editor, line) => {
+        return (line * editor.renderer.lineHeight) + 1;
+    }
+
+    const leftOfEditor = (editor) => {
+        return editor.container.getClientRects()[0].x + editor.renderer.$gutter.offsetWidth;
+    }
+
+    const rightOfEditor = (editor) => {
+        const rect = editor.container.getClientRects()[0];
+        return rect.x + rect.width;
+    }
+
+    const computePoints = (change) => {
+        const left = props.editor.split.$editors[0];
+        const right = props.editor.split.$editors[1];
+        const points = [];
+        points.push({ x: 0, y: topOfLine(left, change.left.line) });
+        points.push({ x: rightOfEditor(left), y: topOfLine(left, change.left.line) });
+        points.push({ x: leftOfEditor(right), y: topOfLine(right, change.right.line) });
+        points.push({ x: rightOfEditor(right), y: topOfLine(right, change.right.line) });
+        points.push({ x: rightOfEditor(right), y: bottomOfLine(right, change.right.line + change.right.count - 1) });
+        points.push({ x: leftOfEditor(right), y: bottomOfLine(right, change.right.line + change.right.count - 1) });
+        points.push({ x: rightOfEditor(left), y: bottomOfLine(left, change.left.line + change.left.count - 1) });
+        points.push({ x: 0, y: bottomOfLine(left, change.left.line + change.left.count - 1) });
+        return points
+    };
+
+    const drawChange = (ctx, change) => {
+        ctx.fillStyle = change.left.count === 0 ? '#00800020' : change.right.count === 0 ? '#80000020' : '#FFBB0030';
+        const points = computePoints(change);
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        ctx.lineTo(points[1].x, points[1].y);
+        ctx.bezierCurveTo((points[1].x + points[2].x) / 2, points[1].y, (points[1].x + points[2].x) / 2, points[2].y, points[2].x, points[2].y);
+        ctx.lineTo(points[3].x, points[3].y);
+        ctx.lineTo(points[4].x, points[4].y);
+        ctx.lineTo(points[5].x, points[5].y);
+        ctx.bezierCurveTo((points[6].x + points[5].x) / 2, points[5].y, (points[5].x + points[6].x) / 2, points[6].y, points[6].x, points[6].y);
+        ctx.lineTo(points[7].x, points[7].y);
+        ctx.closePath();
+        ctx.fill();
+    };
+
+    const draw = ctx => {
+        props.changes.forEach( c => drawChange( ctx, c));
+    }
+
+    useEffect(() => {
+       const canvas = canvasRef.current;
+       canvas.width = canvas.offsetWidth;
+       canvas.height = canvas.offsetHeight;
+       const context = canvas.getContext('2d')
+       draw(context)
+    }, [draw]);
+
+    return <canvas ref={canvasRef} {...props} style={{position: "absolute", width: "100%", height: "100%", zIndex: 10}}/>;
+};
 
 class SplitViewer extends SplitEditor {
 
     render() {
         return <>
-            { super.render() }
-            { this.renderChanges()}
+                { super.render() }
+                <Canvas changes={this.props.changes} editor={this} />
             </>;
     }
 
-    renderChanges() {
-        return null;
-    }
 }
 
 class ChangeViewer extends DiffEditor {
@@ -57,7 +121,7 @@ class ChangeViewer extends DiffEditor {
         const changes = this.mergeDifferences(diffs);
         return <SplitViewer
             name={this.props.name}
-            className={this.props.className}
+            className="change-viewer"
             focus={this.props.focus}
             orientation={this.props.orientation}
             splits={this.props.splits}
@@ -97,9 +161,10 @@ export default class AceChangeViewer extends React.Component {
 
     render() {
         const style = {position: "relative", width: "100%",  height: "100%" };
+        const options = { highlightGutterLine: false };
         return <div style={style} >
                     <ChangeViewer ref="ChangeViewer" name="change-viewer"
-                       theme="eclipse" mode="text"
+                       theme="eclipse" mode="text" highlightActiveLine={false} setOptions={options}
                        value={[this.props.currentVersion, this.props.proposedVersion]}
                        /* onChange={this.bodyEdited.bind(this)} */
                        width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />

@@ -1,6 +1,6 @@
 import React from 'react';
 import AceResourceEditor from "./AceResourceEditor";
-import {Button, Dropdown, DropdownButton} from 'react-bootstrap';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
 import AceChangeViewer from "./AceChangeViewer";
 
 const SAMPLES = {
@@ -32,28 +32,27 @@ export default class ResourceEditorPage extends React.Component {
 
     renderDiffToolbar() {
         return <div style={{marginBottom: "15px"}}>
-            <Button onClick={this.getDiffs.bind(this)}>Diff</Button>
         </div>;
     }
 
-    getDiffs() {
-        const diffs = this.refs["AceChangeViewer"].diff();
-        alert(diffs);
+    createCodeLines(ranges) {
+        const arrays = ranges.map(r => [...Array(1 + r[1] - r[0]).keys()].map(i => i + r[0]));
+        let ids = [];
+        arrays.forEach(a => ids = ids.concat(a));
+        return ids.map(i => "line " + i).join("\n");
     }
 
     renderChangeViewer() {
-        const current = [1, 2 ,3, 6, 7, 8, 9, 10];
-        const proposed = [1, 2 ,3, 4, 5, 6, 7, 10];
-        const currentVersion = current.map(i => "line " + i).join("\n");
-        const proposedVersion = proposed.map(i => "line " + i).join("\n");
+        const currentVersion = this.createCodeLines([[1, 3], [6, 9], [12, 40]])
+        const proposedVersion = this.createCodeLines([[1, 7], [10, 15], [27, 50]]);
 
-        return <div style={{width: "600px", height: "600px"}}>
+       return <div style={{width: "600px", height: "200px"}}>
             <AceChangeViewer ref="AceChangeViewer" currentVersion={currentVersion} proposedVersion={proposedVersion} />
         </div>;
     }
 
     renderResourceEditor() {
-        return <div style={{width: "600px", height: "600px"}}>
+        return <div style={{width: "600px", height: "400px"}}>
             <AceResourceEditor ref="AceResourceEditor" /*commitAndReset={()=>alert("commitAndReset")} bodyEdited={t=>alert(t)}*/ />
         </div>;
     }
