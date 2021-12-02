@@ -7,11 +7,11 @@ const Canvas = props => {
     const canvasRef = useRef(null);
 
     const topOfLine = (editor, line) => {
-        return (line - 1) * editor.renderer.lineHeight;
+        return ((line - 1) * editor.renderer.lineHeight) - editor.renderer.scrollTop;
     };
 
     const bottomOfLine = (editor, line) => {
-        return (line * editor.renderer.lineHeight) + 1;
+        return ((line * editor.renderer.lineHeight) + 1) - editor.renderer.scrollTop;
     }
 
     const leftOfEditor = (editor) => {
@@ -66,7 +66,7 @@ const Canvas = props => {
        draw(context)
     }, [draw]);
 
-    return <canvas ref={canvasRef} {...props} style={{position: "absolute", width: "100%", height: "100%", zIndex: 10}}/>;
+    return <canvas ref={canvasRef} {...props} style={{position: "absolute", width: "100%", height: "100%", zIndex: 10, pointerEvents: "none"}}/>;
 };
 
 class SplitViewer extends SplitEditor {
@@ -120,6 +120,7 @@ class ChangeViewer extends DiffEditor {
         const diffs = this.computeDifferences(this.state.value[0], this.state.value[1]);
         const changes = this.mergeDifferences(diffs);
         return <SplitViewer
+            ref="ChangeViewer"
             name={this.props.name}
             className="change-viewer"
             focus={this.props.focus}
@@ -134,7 +135,7 @@ class ChangeViewer extends DiffEditor {
             onChange={this.onChange}
             onPaste={this.props.onPaste}
             onLoad={this.props.onLoad}
-            onScroll={this.props.onScroll}
+            onScroll={this.onScroll.bind(this)}
             minLines={this.props.minLines}
             maxLines={this.props.maxLines}
             readOnly={this.props.readOnly}
@@ -154,6 +155,10 @@ class ChangeViewer extends DiffEditor {
         />
     }
 
+    onScroll(e) {
+        this.refs.ChangeViewer.forceUpdate();
+        this.props.onScroll && this.props.onScroll(e);
+    }
 }
 
 
