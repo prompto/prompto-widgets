@@ -37,7 +37,7 @@ export default class AcePromptoEditor extends React.Component {
 
     componentDidMount() {
         const session = this.getSession();
-        session.setMode(new PromptoMode(this));
+        session.setMode(new PromptoMode(this, Defaults.dialect, true));
         session.getDocument().on("change", this.adjustBreakpoints.bind(this));
         this.installCommitShortcut();
         this.installToggleBreakpointAction();

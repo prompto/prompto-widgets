@@ -12,13 +12,8 @@ import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-jsx';
 import "ace-builds/src-noconflict/ext-searchbox";
 import "./AceWebpackResolver.js"
+import { modeFromMimeType } from "./AceModes";
 
-
-const MIME_TYPE_MODE_ID = {
-    "page" : "yaml",
-    "plain" : "text",
-    "babel" : "jsx"
-};
 
 export default class AceResourceEditor extends React.Component {
 
@@ -71,16 +66,18 @@ export default class AceResourceEditor extends React.Component {
     }
 
     doSetResource(resource, readOnly) {
-        const mimeType = this.readMimeType(resource);
         const editor = this.getEditor();
         const session = editor.getSession();
-        const oldModeId = this.readModeId(this.state.mimeType);
-        const newModeId = this.readModeId(mimeType);
-        if (newModeId && newModeId !== oldModeId) {
-            session.setMode("ace/mode/" + newModeId);
-            session.setUseWorker(true);
+        const mimeType = this.readMimeType(resource);
+        const newMode = modeFromMimeType(mimeType, null, true);
+        if(mimeType !== this.state.mimeType) {
+            const oldMode = modeFromMimeType(this.state.mimeType, null, false);
+            if (newMode && newMode !== oldMode) {
+                session.setMode(newMode);
+                session.setUseWorker(true);
+            }
         }
-        if (newModeId != null) {
+        if (newMode != null) {
             editor.setValue(resource.body, -1);
             session.setScrollTop(0);
         }
@@ -92,11 +89,4 @@ export default class AceResourceEditor extends React.Component {
         return resource && resource.mimeType ? resource.mimeType : "binary/blob";
     }
 
-    readModeId(mimeType) {
-        if (mimeType && mimeType.startsWith("text/")) {
-            const textType = mimeType.split("/")[1];
-            return MIME_TYPE_MODE_ID[textType] || textType;
-        } else
-            return null;
-    }
 }

@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { diff as DiffEditor, split as SplitEditor } from "react-ace";
+import {modeFromMimeType} from "./AceModes";
+import PropTypes from "prop-types";
 const Diff = require("diff");
 
 const Canvas = props => {
@@ -78,9 +80,15 @@ class SplitViewer extends SplitEditor {
             </>;
     }
 
+    setMode(mode) {
+        this.editor.getSession().setMode(mode);
+        this.split.$editors.forEach(editor => editor.getSession().setMode(mode));
+    }
 }
 
 class ChangeViewer extends DiffEditor {
+
+    static propTypes = {...DiffEditor.propTypes, mode: PropTypes.oneOfType([PropTypes.string, PropTypes.any]) };
 
     computeDifferences(lhs, rhs) {
         return Diff.diffArrays(lhs.split("\n"), rhs.split("\n"));
@@ -117,16 +125,28 @@ class ChangeViewer extends DiffEditor {
     }
 
     render() {
-        const diffs = this.computeDifferences(this.state.value[0], this.state.value[1]);
+        if(!this.SplitViewer) {
+            this.SplitViewer = React.createRef();
+        }
+        const diffs = this.computeDifferences(this.props.value[0], this.props.value[1]);
         const changes = this.mergeDifferences(diffs);
+        let mode = this.props.mode;
+        if(typeof(mode) === typeof("")) {
+            this.modeToSet = null;
+            if (mode.startsWith("ace/mode/"))
+                mode = mode.substring(9);
+        } else {
+            this.modeToSet = mode;
+            mode = "text";
+        }
         return <SplitViewer
-            ref="ChangeViewer"
+            ref={this.SplitViewer}
             name={this.props.name}
             className="change-viewer"
             focus={this.props.focus}
             orientation={this.props.orientation}
             splits={this.props.splits}
-            mode={this.props.mode}
+            mode={mode}
             theme={this.props.theme}
             height={this.props.height}
             width={this.props.width}
@@ -150,13 +170,20 @@ class ChangeViewer extends DiffEditor {
             wrapEnabled={this.props.wrapEnabled}
             enableBasicAutocompletion={this.props.enableBasicAutocompletion}
             enableLiveAutocompletion={this.props.enableLiveAutocompletion}
-            value={this.state.value}
+            value={this.props.value}
             changes={changes}
         />
     }
 
+    componentDidUpdate() {
+        if(this.modeToSet) {
+            this.SplitViewer.current.setMode(this.modeToSet);
+            this.modeToSet = null;
+        }
+    }
+
     onScroll(e) {
-        this.refs.ChangeViewer.forceUpdate();
+        this.SplitViewer.current.forceUpdate();
         this.props.onScroll && this.props.onScroll(e);
     }
 }
@@ -167,9 +194,10 @@ export default class AceChangeViewer extends React.Component {
     render() {
         const style = {position: "relative", width: "100%",  height: "100%" };
         const options = { highlightGutterLine: false };
+        const mode = modeFromMimeType(this.props.mimeType, null, false);
         return <div style={style} >
                     <ChangeViewer ref="ChangeViewer" name="change-viewer"
-                       theme="eclipse" mode="text" highlightActiveLine={false} setOptions={options}
+                       theme="eclipse" mode={mode} highlightActiveLine={false} setOptions={options}
                        value={[this.props.currentVersion, this.props.proposedVersion]}
                        /* onChange={this.bodyEdited.bind(this)} */
                        width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />

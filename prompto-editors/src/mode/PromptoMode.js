@@ -2,7 +2,6 @@
 import 'brace/mode/text';
 import PromptoHighlightRules from "./PromptoHighlightRules";
 import PromptoBehaviour from "./PromptoBehaviour";
-import Defaults from "../code/Defaults";
 import PromptoWorkerClient from "../worker/PromptoWorkerClient";
 import BreakpointsList from "./BreakpointsList";
 import BreakpointFactory from "./BreakpointFactory";
@@ -41,11 +40,12 @@ function silentProgress(text) {
 export default class PromptoMode extends window.ace.acequire("ace/mode/text")
     .Mode {
 
-    constructor(editor) {
+    constructor(editor, dialect, useWorker) {
         super();
         this.$id = "ace/mode/prompto";
         this.$editor = editor;
-        this.$dialect = Defaults.dialect;
+        this.$dialect = dialect;
+        this.createWorker = useWorker ? this.doCreateWorker : this.doNotCreateWorker;
         this.HighlightRules = PromptoHighlightRules;
         this.$behaviour = new PromptoBehaviour();
         this.$progressed = silentProgress;
@@ -117,8 +117,12 @@ export default class PromptoMode extends window.ace.acequire("ace/mode/text")
         });
     }
 
-    createWorker() {
-        this.$worker = new PromptoWorkerClient(this.$editor, Defaults.dialect);
+    doNotCreateWorker() {
+        return null;
+    }
+
+    doCreateWorker() {
+        this.$worker = new PromptoWorkerClient(this.$editor, this.$dialect);
         return this.$worker;
     }
 
