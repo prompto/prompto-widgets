@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ResourceEditorPage from './ResourceEditorPage';
+import ResourceEditorPage from './dev/ResourceEditorPage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './css/ace-editors.css';
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import AceResourceEditor from "./AceResourceEditor";
+import AceResourceEditor from "../AceResourceEditor";
 import { Dropdown, DropdownButton } from 'react-bootstrap';
-import AceChangeViewer from "./AceChangeViewer";
+import AceChangeViewer from "../AceChangeViewer";
 
 const SAMPLES = {
     "text/plain": "Hello",

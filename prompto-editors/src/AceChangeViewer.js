@@ -16,12 +16,18 @@ const Canvas = props => {
         return ((line * editor.renderer.lineHeight) + 1) - editor.renderer.scrollTop;
     }
 
+    const rectOfEditor = (editor) => {
+        const rects = editor.container.getClientRects();
+        return rects.length > 0 ? rects[0] : { x: 0, y: 0, width: 100, height: 100};
+    }
+
     const leftOfEditor = (editor) => {
-        return editor.container.getClientRects()[0].x + editor.renderer.$gutter.offsetWidth;
+        const rect = rectOfEditor(editor);
+        return rect.x + editor.renderer.$gutter.offsetWidth;
     }
 
     const rightOfEditor = (editor) => {
-        const rect = editor.container.getClientRects()[0];
+        const rect = rectOfEditor(editor);
         return rect.x + rect.width;
     }
 
@@ -201,7 +207,8 @@ export default class AceChangeViewer extends React.Component {
                        value={[this.props.currentVersion, this.props.proposedVersion]}
                        /* onChange={this.bodyEdited.bind(this)} */
                        width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />
-        </div>;
+            </div>;
     }
+
 
 }
