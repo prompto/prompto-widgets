@@ -57,9 +57,10 @@ function getCharAt(editor, session, index) {
     }
 }
 
-
 const LEFT_RIGHT = {'"' : '"', "'" : "'", '(' : ')', '{' : '}', '[' : ']'};
 const RIGHT_LEFT = {'"' : '"', "'" : "'", ')' : '(', '}' : '{', ']' : '['};
+
+const TAG_REGEXP = /<\s*[^>^/]+(\s+[^>]+)*>/g;
 
 export default // noinspection JSUnresolvedVariable
 class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behaviour {
@@ -70,6 +71,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
         this.add("enclosing", "insertion", this.onEnclosingInsertion.bind(this));
         this.add("enclosing", "deletion", this.onEnclosingDeletion.bind(this));
         this.add("tag", "insertion", this.onTagInsertion.bind(this));
+        this.add("tag", "deletion", this.onTagDeletion.bind(this));
     }
 
     // noinspection JSMethodCanBeStatic
@@ -199,52 +201,75 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
 
     // noinspection JSMethodCanBeStatic
     onTagInsertion(state, action, editor, session, text) {
-        if(text==='>') {
-            const cursor = editor.getCursorPosition();
-            const section = session.doc.getLine(cursor.row).substring(0, cursor.column) + text;
-            const matches = section.match(/<\s*[^>]+(\s+[^>]+)*>/g);
-            let tag = matches && matches[matches.length - 1];
-            if(tag && section.endsWith(tag)) {
-                tag = tag.substring(1, tag.length-1).trim().split(" ")[0];
-                return {
-                    text: '></' + tag + '>',
-                    selection: [1, 1]
-                };
-            }
-        } else if (this.isValidTagNameCharacter(text)){
+        let tag;
+        if((tag = this.getTagBeingCreated(state, action, editor, session, text)) != null) {
+            // auto insert closing tag
+            return {
+                text: '></' + tag + '>',
+                selection: [1, 1]
+            };
+        } else if(this.isValidTagNameCharacter(text) && (tag = this.getTagBeingEdited(state, action, editor, session, text))!= null) {
+            // auto update closing tag
             const cursor = editor.getCursorPosition();
             const line = session.doc.getLine(cursor.row);
-            const matches = line.match(/<\s*[^>^/]+(\s+[^>]+)*>/g);
-            if(matches) {
-                for(let i=0, idx = -1; i < matches.length; i++) {
-                    const match = matches[i];
-                    const tag = match.substring(1, match.length-1).trim().split(" ")[0];
-                    idx = line.indexOf(tag, idx);
-                    if(idx + tag.length < cursor.column)
-                        continue;
-                    const lines = session.doc.getAllLines();
-                    let line_idx = cursor.row;
-                    const closing = new RegExp("<\\s*\\/\\s*" + tag + "\\s*>", "g");
-                    let closing_matches = line.substring(cursor.column).match(closing);
-                    if(!closing_matches) {
-                        for(line_idx = cursor.row + 1; line_idx < lines.length && !closing_matches; ) {
-                            closing_matches = lines[line_idx].match(closing);
-                            if(!closing_matches)
-                                line_idx++;
-                        }
-                    }
-                    if(closing_matches) {
-                        const closing_idx = lines[line_idx].indexOf(closing_matches[0]);
-                        const position = { row: line_idx, column: closing_idx + (cursor.column - idx) + text.length + 1 };
-                        session.insert(position, text);
-                    }
-                    return;
+            const opening_column = line.indexOf(tag, cursor.column - tag.length);
+            // find closing tag
+            const lines = session.doc.getAllLines();
+            let closing_row = cursor.row;
+            const closing = new RegExp("<\\s*\\/\\s*" + tag + "\\s*>", "g");
+            // find in remaining of current line
+            let closing_matches = line.substring(cursor.column).match(closing);
+            if(!closing_matches) {
+                // find in following lines
+                for(closing_row = cursor.row + 1; closing_row < lines.length && !closing_matches; ) {
+                    closing_matches = lines[closing_row].match(closing);
+                    if(!closing_matches)
+                        closing_row++;
                 }
+            }
+            if(closing_matches) {
+                const closing_column = lines[closing_row].indexOf(closing_matches[0]);
+                const position = { row: closing_row, column: closing_column + (cursor.column - opening_column) + text.length + 1 };
+                session.insert(position, text);
             }
         }
     }
 
+    onTagDeletion(state, action, editor, session, text) {
+        let tag;
+        if((tag = this.getTagBeingEdited(state, action, editor, session, text))!= null) {
+        }
+     }
+
     isValidTagNameCharacter(text) {
         return text.match(/[a-zA-Z-]/);
+    }
+
+    getTagBeingCreated(state, action, editor, session, text) {
+        if (text !== '>')
+            return null;
+        const cursor = editor.getCursorPosition();
+        const section = session.doc.getLine(cursor.row).substring(0, cursor.column) + text;
+        const matches = section.match(TAG_REGEXP);
+        if (matches && section.endsWith(matches[matches.length - 1])) {
+            const tag = matches[matches.length - 1];
+            return tag.substring(1, tag.length - 1).trim().split(" ")[0];
+        } else
+            return null;
+    }
+
+    getTagBeingEdited(state, action, editor, session, text) {
+        const cursor = editor.getCursorPosition();
+        const line = session.doc.getLine(cursor.row);
+        const matches = line.match(TAG_REGEXP);
+        if (matches) {
+            for (let i = 0, idx = -1; i < matches.length; i++) {
+                const match = matches[i];
+                idx = line.indexOf(match, idx);
+                if (idx <= cursor.column && idx + match.length >= cursor.column)
+                    return match.substring(1, match.length - 1).trim().split(" ")[0];
+            }
+        }
+        return null;
     }
 }
