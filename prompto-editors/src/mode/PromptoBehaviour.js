@@ -1,3 +1,5 @@
+import TagLocator from "./TagLocator";
+
 let context = null;
 let contextCaches = {};
 
@@ -59,8 +61,6 @@ function getCharAt(editor, session, index) {
 
 const LEFT_RIGHT = {'"' : '"', "'" : "'", '(' : ')', '{' : '}', '[' : ']'};
 const RIGHT_LEFT = {'"' : '"', "'" : "'", ')' : '(', '}' : '{', ']' : '['};
-
-const TAG_REGEXP = /<\s*[^>^/]+(\s+[^>]+)*>/g;
 
 export default // noinspection JSUnresolvedVariable
 class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behaviour {
@@ -125,7 +125,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
             const selected = session.doc.getTextRange(selection);
             if (selected !== "" && editor.getWrapBehavioursEnabled()) {
                 return getWrapped(selection, selected, text, LEFT_RIGHT[text]);
-            } else if (this.isSaneInsertion(editor, session)) {
+            } else if (this.isSaneEnclosingInsertion(editor, session)) {
                 this.recordAutoInsert(editor, session, LEFT_RIGHT[text]);
                 return {
                     text: text + LEFT_RIGHT[text],
@@ -166,7 +166,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
     }
 
     // noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
-    isSaneInsertion(editor, session) {
+    isSaneEnclosingInsertion(editor, session) {
         const cursor = editor.getCursorPosition();
         const line = session.doc.getLine(cursor.row);
         const rightChar = line.substring(cursor.column, cursor.column + 1);
@@ -202,42 +202,47 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
     // noinspection JSMethodCanBeStatic
     onTagInsertion(state, action, editor, session, text) {
         let tag;
-        if((tag = this.getTagBeingCreated(state, action, editor, session, text)) != null) {
+        if((tag = this.getTagBeingCreated(editor, session, text)) != null) {
             // auto insert closing tag
             return {
                 text: '></' + tag + '>',
                 selection: [1, 1]
             };
-        } else if(this.isValidTagNameCharacter(text) && (tag = this.getTagBeingEdited(state, action, editor, session, text))!= null) {
+        } else if((tag = this.getTagBeingEdited(editor, session))!= null) {
             // auto update closing tag
-            const cursor = editor.getCursorPosition();
-            const line = session.doc.getLine(cursor.row);
-            const opening_column = line.indexOf(tag, cursor.column - tag.length);
-            // find closing tag
-            const lines = session.doc.getAllLines();
-            let closing_row = cursor.row;
-            const closing = new RegExp("<\\s*\\/\\s*" + tag + "\\s*>", "g");
-            // find in remaining of current line
-            let closing_matches = line.substring(cursor.column).match(closing);
-            if(!closing_matches) {
-                // find in following lines
-                for(closing_row = cursor.row + 1; closing_row < lines.length && !closing_matches; ) {
-                    closing_matches = lines[closing_row].match(closing);
-                    if(!closing_matches)
-                        closing_row++;
-                }
-            }
-            if(closing_matches) {
-                const closing_column = lines[closing_row].indexOf(closing_matches[0]);
-                const position = { row: closing_row, column: closing_column + (cursor.column - opening_column) + text.length + 1 };
+            const locator = new TagLocator(session.doc.getAllLines());
+            const closing = locator.locateClosingTagOf(tag);
+            if(closing) {
+                const cursor = editor.getCursorPosition();
+                const relative_column = cursor.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
+                const position = {
+                    row: closing.location.row,
+                    column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column }; // use tag.tagName to skip '/'
                 session.insert(position, text);
             }
         }
     }
 
-    onTagDeletion(state, action, editor, session, text) {
+    onTagDeletion(state, action, editor, session, range) {
         let tag;
-        if((tag = this.getTagBeingEdited(state, action, editor, session, text))!= null) {
+        if((tag = this.getTagBeingEdited(editor, session))!= null) {
+            const locator = new TagLocator(session.doc.getAllLines());
+            const closing = locator.locateClosingTagOf(tag);
+            if (closing) {
+                const cursor = editor.getCursorPosition();
+                const relative_column = cursor.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
+                const closing_range = {
+                    start: {
+                        row: closing.location.row,
+                        column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column
+                    },
+                    end: {
+                        row: closing.location.row,
+                        column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column + range.end.column - range.start.column
+                    }
+                };
+                session.remove(closing_range);
+            }
         }
      }
 
@@ -245,31 +250,20 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
         return text.match(/[a-zA-Z-]/);
     }
 
-    getTagBeingCreated(state, action, editor, session, text) {
+    getTagBeingCreated(editor, session, text) {
         if (text !== '>')
             return null;
         const cursor = editor.getCursorPosition();
         const section = session.doc.getLine(cursor.row).substring(0, cursor.column) + text;
-        const matches = section.match(TAG_REGEXP);
-        if (matches && section.endsWith(matches[matches.length - 1])) {
-            const tag = matches[matches.length - 1];
-            return tag.substring(1, tag.length - 1).trim().split(" ")[0];
-        } else
-            return null;
+        const locator = new TagLocator([section]);
+        const location = locator.locateTagAt({ row: 0, column: cursor.column});
+        return location == null ? null : location.tagName;
     }
 
-    getTagBeingEdited(state, action, editor, session, text) {
+    getTagBeingEdited(editor, session) {
         const cursor = editor.getCursorPosition();
-        const line = session.doc.getLine(cursor.row);
-        const matches = line.match(TAG_REGEXP);
-        if (matches) {
-            for (let i = 0, idx = -1; i < matches.length; i++) {
-                const match = matches[i];
-                idx = line.indexOf(match, idx);
-                if (idx <= cursor.column && idx + match.length >= cursor.column)
-                    return match.substring(1, match.length - 1).trim().split(" ")[0];
-            }
-        }
-        return null;
+        const locator = new TagLocator(session.doc.getAllLines());
+        return locator.locateTagAt(cursor);
     }
+
 }
