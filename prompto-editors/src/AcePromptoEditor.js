@@ -7,6 +7,7 @@ import "ace-builds/src-noconflict/ext-searchbox";
 import PromptoMode from "./mode/PromptoMode";
 import BreakpointFactory from "./mode/BreakpointFactory";
 import BreakpointsList from "./mode/BreakpointsList";
+import Defaults from './code/Defaults';
 
 function enhanceEditSession() {
     window.ace.EditSession.prototype.clearGutterDecorations = function () {
@@ -36,8 +37,10 @@ export default class AcePromptoEditor extends React.Component {
     }
 
     componentDidMount() {
+        // noinspection PointlessBooleanExpressionJS
+        const useWorker = typeof (this.props.useWorker) === typeof (true) ? this.props.useWorker : true
         const session = this.getSession();
-        session.setMode(new PromptoMode(this, Defaults.dialect, true));
+        session.setMode(new PromptoMode(this, Defaults.dialect, useWorker));
         session.getDocument().on("change", this.adjustBreakpoints.bind(this));
         this.installCommitShortcut();
         this.installToggleBreakpointAction();
