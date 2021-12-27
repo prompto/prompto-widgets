@@ -165,14 +165,11 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
 
     // noinspection JSMethodCanBeStatic,JSUnusedLocalSymbols
     isSaneInsertion(editor, session) {
-        return true;
-        /*
         const cursor = editor.getCursorPosition();
         const line = session.doc.getLine(cursor.row);
         const rightChar = line.substring(cursor.column, cursor.column + 1);
         // Only insert in front of whitespace
         return rightChar==="" || rightChar===" ";
-        */
     }
 
     recordAutoInsert(editor, session, closing) {
@@ -205,16 +202,49 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
         if(text==='>') {
             const cursor = editor.getCursorPosition();
             const section = session.doc.getLine(cursor.row).substring(0, cursor.column) + text;
-            const matches = section.match(/(<([a-zA-Z][-\w]*)>)/g);
+            const matches = section.match(/<\s*[^>]+(\s+[^>]+)*>/g);
             let tag = matches && matches[matches.length - 1];
             if(tag && section.endsWith(tag)) {
-                tag = tag.substring(1, tag.length-1);
+                tag = tag.substring(1, tag.length-1).trim().split(" ")[0];
                 return {
                     text: '></' + tag + '>',
                     selection: [1, 1]
                 };
             }
+        } else if (this.isValidTagNameCharacter(text)){
+            const cursor = editor.getCursorPosition();
+            const line = session.doc.getLine(cursor.row);
+            const matches = line.match(/<\s*[^>^/]+(\s+[^>]+)*>/g);
+            if(matches) {
+                for(let i=0, idx = -1; i < matches.length; i++) {
+                    const match = matches[i];
+                    const tag = match.substring(1, match.length-1).trim().split(" ")[0];
+                    idx = line.indexOf(tag, idx);
+                    if(idx + tag.length < cursor.column)
+                        continue;
+                    const lines = session.doc.getAllLines();
+                    let line_idx = cursor.row;
+                    const closing = new RegExp("<\\s*\\/\\s*" + tag + "\\s*>", "g");
+                    let closing_matches = line.substring(cursor.column).match(closing);
+                    if(!closing_matches) {
+                        for(line_idx = cursor.row + 1; line_idx < lines.length && !closing_matches; ) {
+                            closing_matches = lines[line_idx].match(closing);
+                            if(!closing_matches)
+                                line_idx++;
+                        }
+                    }
+                    if(closing_matches) {
+                        const closing_idx = lines[line_idx].indexOf(closing_matches[0]);
+                        const position = { row: line_idx, column: closing_idx + (cursor.column - idx) + text.length + 1 };
+                        session.insert(position, text);
+                    }
+                    return;
+                }
+            }
         }
     }
 
+    isValidTagNameCharacter(text) {
+        return text.match(/[a-zA-Z-]/);
+    }
 }
