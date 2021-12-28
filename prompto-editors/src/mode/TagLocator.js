@@ -13,10 +13,12 @@ export default class TagLocator {
             for (let i = 0, idx = -1; i < matches.length; i++) {
                 const match = matches[i];
                 idx = line.indexOf(match, idx + 1);
-                if (idx <= location.column && idx + match.length > location.column)
+                const tagName = match.substring(1, match.length - 1).trim().split(" ")[0];
+                const idxTag = idx + match.indexOf(tagName);
+                if (location.column >= idxTag && location.column <= idxTag + tagName.length )
                     return {
                         fullTag: match,
-                        tagName: match.substring(1, match.length - 1).trim().split(" ")[0],
+                        tagName: tagName,
                         location: {
                             row: location.row,
                             column: idx

@@ -21,7 +21,16 @@ const CHANGE_SAMPLES = {
     "prompto/objy": {
         current: 'category Thing(name);\ncategory Thing2(name);',
         proposed: 'category Thing(name);\ncategory Thing2(name2);'
+    },
+    "prompto/engly": {
+        current: 'define Thing as category with attribute name\n',
+        proposed: ''
+    },
+    "prompto/monty": {
+        current: '',
+        proposed: 'category Thing(name):\n  pass\n'
     }
+
 }
 
 export default class ChangeViewerTab extends React.Component {
@@ -71,6 +80,8 @@ export default class ChangeViewerTab extends React.Component {
                 <Dropdown.Item eventKey={"text/plain"}>Text</Dropdown.Item>
                 <Dropdown.Item eventKey={"text/json"}>Json</Dropdown.Item>
                 <Dropdown.Item eventKey={"prompto/objy"}>Objy</Dropdown.Item>
+                <Dropdown.Item eventKey={"prompto/engly"}>Engly</Dropdown.Item>
+                <Dropdown.Item eventKey={"prompto/monty"}>Monty</Dropdown.Item>
             </DropdownButton>
         </div>;
     }
@@ -90,8 +101,7 @@ export default class ChangeViewerTab extends React.Component {
     forceResize() {
         if(!this.didResize) {
             this.didResize = true;
-            this.refs.AceChangeViewer.refs.ChangeViewer.SplitViewer.current.split.resize(true);
-            this.refs.AceChangeViewer.forceUpdate();
+            this.refs.AceChangeViewer.forceResize();
         }
     }
 

@@ -162,6 +162,13 @@ export default class AcePromptoEditor extends React.Component {
         }
     }
 
+    getResourceBody(resource, callback) {
+        const editor = this.getEditor();
+        const session = editor.getSession();
+        const mode = session.getMode();
+        mode.getResourceBody(resource, body => callback(body));
+    }
+
     /* called when stepping into code */
     setContent(content, readOnly, callback) {
         const editor = this.getEditor();

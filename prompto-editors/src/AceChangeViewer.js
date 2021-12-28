@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { diff as DiffEditor, split as SplitEditor } from "react-ace";
 import {modeFromMimeType} from "./AceModes";
 import PropTypes from "prop-types";
-const Diff = require("diff");
+import ChangeBuilder from "./change/ChangeBuilder";
 
 const Canvas = props => {
 
@@ -18,7 +18,10 @@ const Canvas = props => {
 
     const rectOfEditor = (editor) => {
         const rects = editor.container.getClientRects();
-        return rects.length > 0 ? rects[0] : { x: 0, y: 0, width: 100, height: 100};
+        if(rects.length === 0)
+            return { x: 0, y: 0, width: 100, height: 100};
+        const parentRects = editor.container.parentNode.getClientRects();
+        return { x: rects[0].x - parentRects[0].x, y: rects[0].y - parentRects[0].y, width: rects[0].width, height: rects[0].height};
     }
 
     const leftOfEditor = (editor) => {
@@ -74,7 +77,7 @@ const Canvas = props => {
        draw(context)
     }, [draw]);
 
-    return <canvas ref={canvasRef} {...props} style={{position: "absolute", width: "100%", height: "100%", zIndex: 10, pointerEvents: "none"}}/>;
+    return <canvas ref={canvasRef} {...props} style={{position: "absolute", top: "0px", width: "100%", height: "100%", zIndex: 10, pointerEvents: "none"}}/>;
 };
 
 class SplitViewer extends SplitEditor {
@@ -96,46 +99,11 @@ class ChangeViewer extends DiffEditor {
 
     static propTypes = {...DiffEditor.propTypes, mode: PropTypes.oneOfType([PropTypes.string, PropTypes.any]) };
 
-    computeDifferences(lhs, rhs) {
-        return Diff.diffArrays(lhs.split("\n"), rhs.split("\n"));
-    }
-
-    mergeDifferences(diffs) {
-        let leftLine = 1;
-        let rightLine = 1;
-        const changes = [];
-        for(let i=0; i<diffs.length; i++) {
-            const d1 = diffs[i];
-            if(d1.removed && i+1<diffs.length) {
-                const d2 = diffs[i+1];
-                if(d2.added) {
-                    changes.push({ left: { line: leftLine, count: d1.count }, right: { line: rightLine, count: d2.count }});
-                    leftLine += d1.count;
-                    rightLine += d2.count;
-                    i++;
-                    continue;
-                }
-            }
-            if(d1.removed) {
-                changes.push({ left: { line: leftLine, count: d1.count }, right: { line: rightLine, count: 0 }});
-                leftLine += d1.count;
-            } else if(d1.added) {
-                changes.push({ left: { line: leftLine, count: 0 }, right: { line: rightLine, count: d1.count }});
-                rightLine += d1.count;
-            } else {
-                leftLine += d1.count;
-                rightLine += d1.count;
-            }
-        }
-        return changes;
-    }
-
     render() {
         if(!this.SplitViewer) {
             this.SplitViewer = React.createRef();
         }
-        const diffs = this.computeDifferences(this.props.value[0], this.props.value[1]);
-        const changes = this.mergeDifferences(diffs);
+        const changes = ChangeBuilder.computeChanges(this.props.value[0], this.props.value[1]);
         let mode = this.props.mode;
         if(typeof(mode) === typeof("")) {
             this.modeToSet = null;
@@ -210,5 +178,9 @@ export default class AceChangeViewer extends React.Component {
             </div>;
     }
 
+    forceResize() {
+        this.refs.ChangeViewer.SplitViewer.current.split.resize(true);
+        this.forceUpdate();
+    }
 
 }

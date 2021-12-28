@@ -1,4 +1,6 @@
 const ace = window.ace;
+// next 2 lines is an horrible workaround of yarn start/yarn build inconsistency
+// eslint-disable-next-line
 /* eslint-disable import/no-webpack-loader-syntax */
 /*
 ace.config.setModuleUrl(

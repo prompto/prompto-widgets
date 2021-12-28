@@ -171,7 +171,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
         const line = session.doc.getLine(cursor.row);
         const rightChar = line.substring(cursor.column, cursor.column + 1);
         // Only insert in front of whitespace
-        return rightChar==="" || rightChar===" ";
+        return rightChar==="" || ">)}] ".indexOf(rightChar) >= 0;
     }
 
     recordAutoInsert(editor, session, closing) {
@@ -208,7 +208,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
                 text: '></' + tag + '>',
                 selection: [1, 1]
             };
-        } else if((tag = this.getTagBeingEdited(editor, session))!= null) {
+        } else if(this.isValidTagNameCharacter(text) && (tag = this.getTagBeingEdited(editor, session))!= null) {
             // auto update closing tag
             const locator = new TagLocator(session.doc.getAllLines());
             const closing = locator.locateClosingTagOf(tag);

@@ -3,7 +3,7 @@ import TagLocator from "./TagLocator";
 it("locates opening tag at start", () => {
     const lines = ["xyz", "abc <x>"];
     const locator = new TagLocator(lines);
-    const locationAndTag = locator.locateTagAt({row: 1, column: 4});
+    const locationAndTag = locator.locateTagAt({row: 1, column: 5});
     expect(locationAndTag).toEqual({fullTag: "<x>", tagName: "x", location: {row: 1, column: 4}});
 });
 
@@ -18,6 +18,13 @@ it("does not locate opening tag before column", () => {
     const lines = ["xyz", "abc <x>"];
     const locator = new TagLocator(lines);
     const locationAndTag = locator.locateTagAt({row: 1, column: 3});
+    expect(locationAndTag).toBeNull();
+});
+
+it("does not locate opening tag in attribute", () => {
+    const lines = ["xyz", "abc <x xstyle=\"bold\">"];
+    const locator = new TagLocator(lines);
+    const locationAndTag = locator.locateTagAt({row: 1, column: 9});
     expect(locationAndTag).toBeNull();
 });
 
