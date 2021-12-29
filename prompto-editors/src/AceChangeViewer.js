@@ -171,7 +171,7 @@ export default class AceChangeViewer extends React.Component {
         const mode = modeFromMimeType(this.props.mimeType, null, false);
         return <div style={style} >
                     <ChangeViewer ref="ChangeViewer" name="change-viewer"
-                       theme="eclipse" mode={mode} highlightActiveLine={false} setOptions={options}
+                       theme="eclipse" mode={mode} highlightActiveLine={false} setOptions={options} wrapEnabled={false}
                        value={[this.props.currentVersion, this.props.proposedVersion]}
                        /* onChange={this.bodyEdited.bind(this)} */
                        width="100%" height="100%" editorProps={{ $blockScrolling: Infinity }}  />
