@@ -256,7 +256,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
         const cursor = editor.getCursorPosition();
         const section = session.doc.getLine(cursor.row).substring(0, cursor.column) + text;
         const locator = new TagLocator([section]);
-        const location = locator.locateTagAt({ row: 0, column: cursor.column});
+        const location = locator.locateTagAt({ row: 0, column: cursor.column}, true);
         return location == null ? null : location.tagName;
     }
 

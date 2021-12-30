@@ -6,7 +6,7 @@ export default class TagLocator {
         this.lines = lines;
     }
 
-    locateTagAt(location) {
+    locateTagAt(location, allowAttributes) {
         const line = this.lines[location.row] || "";
         const matches = line.match(TAG_REGEXP);
         if (matches) {
@@ -14,8 +14,14 @@ export default class TagLocator {
                 const match = matches[i];
                 idx = line.indexOf(match, idx + 1);
                 const tagName = match.substring(1, match.length - 1).trim().split(" ")[0];
-                const idxTag = idx + match.indexOf(tagName);
-                if (location.column >= idxTag && location.column <= idxTag + tagName.length )
+                let isInTag;
+                if(allowAttributes)
+                    isInTag = location.column >= idx && location.column <= idx + match.length;
+                else {
+                    const idxTag = idx + match.indexOf(tagName);
+                    isInTag = location.column >= idxTag && location.column <= idxTag + tagName.length;
+                }
+                if (isInTag)
                     return {
                         fullTag: match,
                         tagName: tagName,

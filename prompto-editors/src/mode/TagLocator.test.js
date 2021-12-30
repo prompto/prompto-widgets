@@ -28,6 +28,14 @@ it("does not locate opening tag in attribute", () => {
     expect(locationAndTag).toBeNull();
 });
 
+
+it("locates opening tag in attribute", () => {
+    const lines = ["xyz", "abc <x xstyle=\"bold\">"];
+    const locator = new TagLocator(lines);
+    const locationAndTag = locator.locateTagAt({row: 1, column: 9}, true);
+    expect(locationAndTag).toEqual({fullTag: "<x xstyle=\"bold\">", tagName: "x", location: {row: 1, column: 4}});
+});
+
 it("does not locate opening tag before line", () => {
     const lines = ["xyz", "abc <x>"];
     const locator = new TagLocator(lines);
