@@ -1,4 +1,4 @@
-const TAG_REGEXP = /<\s*[^>^/]+(\s+[^>]+)*>/g;
+const TAG_REGEXP = /<\s*[^[>/ ]+(\s+[^[>/=]+\s*=\s*(("[^"]*")|({[^}]*})))*\s*>/g;
 
 export default class TagLocator {
 

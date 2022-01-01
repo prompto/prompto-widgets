@@ -7,6 +7,13 @@ it("locates opening tag at start", () => {
     expect(locationAndTag).toEqual({fullTag: "<x>", tagName: "x", location: {row: 1, column: 4}});
 });
 
+it("locates complete tag with arrow function", () => {
+    const lines = ["<x abc={a=>b}>"];
+    const locator = new TagLocator(lines);
+    const locationAndTag = locator.locateTagAt({row: 0, column: 1});
+    expect(locationAndTag).toEqual({fullTag: "<x abc={a=>b}>", tagName: "x", location: {row: 0, column: 0}});
+});
+
 it("locates opening tag at end", () => {
     const lines = ["xyz", "abc <x>"];
     const locator = new TagLocator(lines);
