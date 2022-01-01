@@ -201,6 +201,9 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
 
     // noinspection JSMethodCanBeStatic
     onTagInsertion(state, action, editor, session, text) {
+        const range = editor.getSelectionRange();
+        if(range.start.row !== range.end.row)
+            return;
         let tag;
         if((tag = this.getTagBeingCreated(editor, session, text)) != null) {
             // auto insert closing tag
@@ -213,25 +216,42 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
             const locator = new TagLocator(session.doc.getAllLines());
             const closing = locator.locateClosingTagOf(tag);
             if(closing) {
-                const cursor = editor.getCursorPosition();
-                const relative_column = cursor.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
-                const position = {
-                    row: closing.location.row,
-                    column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column }; // use tag.tagName to skip '/'
-                session.insert(position, text);
+                const relative_column = range.start.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
+                if(range.end.column === range.start.column) {
+                    const position = {
+                        row: closing.location.row,
+                        column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column // use tag.tagName to skip '/'
+                    };
+                    session.insert(position, text);
+
+                } else {
+                    const column = closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column; // use tag.tagName to skip '/'
+                    const target = {
+                        start: {
+                            row: closing.location.row,
+                            column: column
+                        },
+                        end: {
+                            row: closing.location.row,
+                            column: column + range.end.column - range.start.column
+                        }
+                    }
+                    session.replace(target, text);
+                }
             }
         }
     }
 
     onTagDeletion(state, action, editor, session, range) {
+        if(range.start.row !== range.end.row)
+            return;
         let tag;
         if((tag = this.getTagBeingEdited(editor, session))!= null) {
             const locator = new TagLocator(session.doc.getAllLines());
             const closing = locator.locateClosingTagOf(tag);
             if (closing) {
-                const cursor = editor.getCursorPosition();
-                const relative_column = cursor.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
-                const closing_range = {
+                const relative_column = range.start.column - tag.location.column - tag.fullTag.indexOf(tag.tagName);
+                const target = {
                     start: {
                         row: closing.location.row,
                         column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column
@@ -241,7 +261,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
                         column: closing.location.column + closing.fullTag.indexOf(tag.tagName) + relative_column + range.end.column - range.start.column
                     }
                 };
-                session.remove(closing_range);
+                session.remove(target);
             }
         }
      }
