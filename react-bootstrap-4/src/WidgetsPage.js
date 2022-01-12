@@ -27,7 +27,7 @@ export default class WidgetsPage extends React.Component {
     handleSelectChange(selected) {
         this.setState({selected: selected[0]}, ()=>{
             const typeahead = this.refs.typeahead;
-            typeahead && typeahead.getInstance().clear();
+            typeahead && typeahead.clear();
         });
     }
 

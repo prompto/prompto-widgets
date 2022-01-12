@@ -272,13 +272,17 @@ export default class DatePicker extends React.Component {
 
 
    makeDateValues(localDate) {
+     return DatePicker.makeDateValuesWithPropsAndState(this.props, this.state, localDate);
+   }
+
+   static makeDateValuesWithPropsAndState(props, state, localDate) {
     const isoString = localDate ? localDate.toString() : null;
     let displayDate;
     const selectedDate = isoString ? new Date(`${isoString.slice(0,10)}T12:00:00.000Z`) : null;
-    const minDate = this.props.minDate ? new Date(`${this.props.minDate.slice(0,10)}T12:00:00.000Z`) : null;
-    const maxDate = this.props.maxDate ? new Date(`${this.props.maxDate.slice(0,10)}T12:00:00.000Z`) : null;
+    const minDate = props.minDate ? new Date(`${props.minDate.slice(0,10)}T12:00:00.000Z`) : null;
+    const maxDate = props.maxDate ? new Date(`${props.maxDate.slice(0,10)}T12:00:00.000Z`) : null;
 
-    const inputValue = isoString ? this.makeInputValueString(selectedDate) : null;
+    const inputValue = isoString ? DatePicker.makeInputValueStringWithPropsAndState(props, state, selectedDate) : null;
     if (selectedDate) {
       displayDate = new Date(selectedDate);
     } else {
@@ -394,15 +398,19 @@ export default class DatePicker extends React.Component {
   }
 
   makeInputValueString(date) {
+    return DatePicker.makeInputValueStringWithPropsAndState(this.props, this.state, date)
+  }
+
+  static makeInputValueStringWithPropsAndState(props, state, date) {
     const month = date.getMonth() + 1;
     const day = date.getDate();
 
     //this method is executed during intialState setup... handle a missing state properly
-    const separator = (this.state ? this.state.separator : this.props.dateFormat.match(/[^A-Z]/)[0]);
-    if (this.props.dateFormat.match(/MM.DD.YYYY/)) {
+    const separator = (state ? state.separator : props.dateFormat.match(/[^A-Z]/)[0]);
+    if (props.dateFormat.match(/MM.DD.YYYY/)) {
       return (month > 9 ? month : `0${month}`) + separator + (day > 9 ? day : `0${day}`) + separator + date.getFullYear();
     }
-    else if (this.props.dateFormat.match(/DD.MM.YYYY/)) {
+    else if (props.dateFormat.match(/DD.MM.YYYY/)) {
       return (day > 9 ? day : `0${day}`) + separator + (month > 9 ? month : `0${month}`) + separator + date.getFullYear();
     }
     else {
@@ -532,10 +540,11 @@ export default class DatePicker extends React.Component {
     }
   }
 
-  componentWillReceiveProps(newProps) {
-    const value = newProps.value;
-    if (this.getValue() !== value) {
-      this.setState(this.makeDateValues(value));
+  static getDerivedStateFromProps(props, state) {
+    const currentValue = state.selectedDate ? new window.LocalDate(state.selectedDate) : null;
+    const newValue = props.value;
+    if (currentValue !== newValue) {
+      return DatePicker.makeDateValuesWithPropsAndState(props, state, newValue);
     }
   }
 

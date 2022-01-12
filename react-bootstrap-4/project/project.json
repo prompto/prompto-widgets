@@ -7,8 +7,8 @@
   "htmlEngine" : "react-16",
   "codeResource" : "widgets.poc",
   "stubResource" : "stub.js",
-  "styleSheets" : [ "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" ],
-  "javaScripts" : [ "https://unpkg.com/react-bootstrap@1.5.1/dist/react-bootstrap.min.js", "main.js" ],
+  "styleSheets" : [ "https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css" ],
+  "javaScripts" : [ "https://unpkg.com/react-bootstrap@1.6.4/dist/react-bootstrap.min.js", "main.js" ],
   "resources" : [
       { "url": "main.js.map", "mimeType": "application/octet-stream" }
   ],
