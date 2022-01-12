@@ -267,7 +267,7 @@ class PromptoBehaviour extends window.ace.acequire("ace/mode/behaviour").Behavio
      }
 
     isValidTagNameCharacter(text) {
-        return text.match(/[a-zA-Z-]/);
+        return text.match(/[a-zA-Z0-9-]/);
     }
 
     getTagBeingCreated(editor, session, text) {
