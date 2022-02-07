@@ -12,7 +12,7 @@ export default class PromptoHighlightRules extends window.ace.acequire(
 
         const types = (
             "Java|C#|Python2|Python3|JavaScript|Swift|Any|Blob|Boolean|Character|Text|" +
-            "Image|Integer|Decimal|Date|Time|DateTime|Period|Method|Code|Document|Html|" +
+            "Image|Integer|Decimal|Date|Time|DateTime|Period|Method|Code|Document|Html|Void|" +
             "attr|attribute|attributes|bindings|enum|category|class|getter|" +
             "method|methods|operator|resource|setter|singleton|test|widget"
         );
@@ -76,7 +76,7 @@ export default class PromptoHighlightRules extends window.ace.acequire(
                 },
                 {
                     token : "keyword.operator",
-                    regex : "!|%|\\\\|/|\\*|\\-|\\+|~=|==|<>|!=|<=|>=|=|<|>|&&|\\|\\|"
+                    regex : "!|%|\\\\|/|\\*|\\-|\\+|~=|==|<>|!=|<=|>=|=>|=|<|>|&&|\\"
                 },
                 {
                     token : "punctuation.operator",
