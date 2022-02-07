@@ -119,10 +119,10 @@ export default class Repository {
         if (content.type === "TestRef")
             return this.projectContext.getRegisteredTest(content.name);
         else if (content.type === "MethodRef") {
-            var methodsMap = this.projectContext.getRegisteredDeclaration(content.name);
+            var methodsMap = this.projectContext.getRegisteredDeclaration({name: content.name});
             return methodsMap.protos[content.prototype || ""] || methodsMap.getFirst();
         } else
-            return this.projectContext.getRegisteredDeclaration(content.name);
+            return this.projectContext.getRegisteredDeclaration({name: content.name});
     }
 
     /* dbDecl = object received from the server */
@@ -388,7 +388,7 @@ export default class Repository {
         // TODO refine for method protos
         if(old_decls.some(old => old.name === decl.name))
             return false;
-        const existing = this.projectContext.getRegisteredDeclaration(decl.name);
+        const existing = this.projectContext.getRegisteredDeclaration(decl.id);
         if(existing instanceof prompto.runtime.MethodDeclarationMap) {
             if(decl instanceof prompto.declaration.BaseMethodDeclaration)
                 return existing.hasProto(decl.getProto());
@@ -491,7 +491,7 @@ export default class Repository {
     }
 
     categoryForStackFrame(stackFrame) {
-        const decl = this.projectContext.getRegisteredDeclaration(stackFrame.categoryName);
+        const decl = this.projectContext.getRegisteredDeclaration({ name: stackFrame.categoryName});
         if(decl)
             return { type: this.typeFromDeclaration(this.projectContext, decl), name: stackFrame.categoryName };
         else
@@ -520,7 +520,7 @@ export default class Repository {
     methodForStackFrame(stackFrame) {
         let decl = this.projectContext.getRegisteredTest(stackFrame.methodName);
         if(!decl) {
-            const methodsMap = this.projectContext.getRegisteredDeclaration(stackFrame.methodName);
+            const methodsMap = this.projectContext.getRegisteredDeclaration({name: stackFrame.methodName});
             if(methodsMap)
                 decl = stackFrame.methodProto ? methodsMap.protos[stackFrame.methodProto] : methodsMap.getFirst();
         }
@@ -593,12 +593,12 @@ export default class Repository {
     locateSection(breakpoint) {
         let declaration = null;
         if (breakpoint.categoryName)
-            declaration = this.projectContext.getRegisteredDeclaration(breakpoint.categoryName);
+            declaration = this.projectContext.getRegisteredDeclaration({name: breakpoint.categoryName});
         else if (breakpoint.methodName) {
             if(breakpoint.methodName === '"')
                 declaration = this.projectContext.getRegisteredTest(breakpoint.name);
             else {
-                const methods = this.projectContext.getRegisteredDeclaration(breakpoint.methodName);
+                const methods = this.projectContext.getRegisteredDeclaration({name: breakpoint.methodName});
                 if (methods)
                     declaration = methods.protos[breakpoint.methodProto];
             }
