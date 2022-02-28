@@ -1,5 +1,14 @@
 import React from 'react';
-import { Form, FormGroup, FormControl, FormLabel, Dropdown, InputGroup } from 'react-bootstrap';
+import {
+    Form,
+    FormGroup,
+    FormControl,
+    FormLabel,
+    Dropdown,
+    InputGroup,
+    ToggleButtonGroup,
+    ToggleButton
+} from 'react-bootstrap';
 import DatePicker from './datepicker/DatePicker';
 import LocalDate from './intrinsic/LocalDate';
 import List from "./intrinsic/List";
@@ -39,7 +48,7 @@ export default class WidgetsPage extends React.Component {
     render() {
         const menuStyle = { position: "fixed", display: "block", left: 100, top: 100, zIndex: 999999 };
         const selected = this.state.selected ? this.state.selected.name : "";
-        return <div style={{width: "500px"}}>
+        return <div style={{width: "500px", margin: "20px"}}>
             <InputGroup className="mb-3" >
                 <FormControl
                     placeholder="Recipient's username"
@@ -52,14 +61,21 @@ export default class WidgetsPage extends React.Component {
             </InputGroup>
 
             <FormGroup >
-                    <FormLabel onContextMenu={this.handleContextMenu.bind(this)}>Date picker</FormLabel>
-                    <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
-                </FormGroup>
-                <FormGroup>
-                    <FormLabel>Employee</FormLabel>
-                    <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
-                    <Form.Control.Feedback>{selected}</Form.Control.Feedback>
-                </FormGroup>
+                <FormLabel onContextMenu={this.handleContextMenu.bind(this)}>Date picker</FormLabel>
+                <DatePicker id="example-datepicker" value={this.state.dateValue} onChange={this.handleDateChange.bind(this)} />
+            </FormGroup>
+            <FormGroup>
+                <FormLabel>Employee</FormLabel>
+                <PromptoTypeahead ref={"typeahead"} id="example-typeahead" options={this.state.selectOptions} labelKey="name" onChange={this.handleSelectChange.bind(this)}/>
+                <Form.Control.Feedback>{selected}</Form.Control.Feedback>
+            </FormGroup>
+            <FormGroup>
+                <FormLabel>Companies</FormLabel>
+                <ToggleButtonGroup type="checkbox" defaultValue={new List(false, [2])}>
+                    <ToggleButton variant="secondary" value={1}>Listed</ToggleButton>
+                    <ToggleButton variant="secondary" value={2}>Private</ToggleButton>
+                </ToggleButtonGroup>
+            </FormGroup>
             { this.state.contextMenu &&
                 <div style={menuStyle}>
                     <ContextMenu>

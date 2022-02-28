@@ -13,6 +13,10 @@ function List(mutable, items) {
 List.prototype = Object.create(Array.prototype);
 List.prototype.constructor = List;
 
+List.prototype.toArray = function() {
+    return Array.from(this);
+};
+
 List.prototype.addItems = function(items) {
     if(typeof(StrictSet) !== 'undefined' && items instanceof StrictSet)
     	items = Array.from(items.set.values());
@@ -23,19 +27,16 @@ List.prototype.addItems = function(items) {
 List.prototype.add = function(items) {
     if(typeof(StrictSet) !== 'undefined' && items instanceof StrictSet)
         items = Array.from(items.set.values());
-    var concat = new List(false);
-    concat.addItems(this);
-    concat.addItems(items);
-    return concat;
+    var result = new List(false, this);
+    result.addItems(items);
+    return result;
 };
 
 
 List.prototype.remove = function(items) {
 	var excluded = (typeof(StrictSet) !== 'undefined' && items instanceof StrictSet) ? items : new Set(items);
     var remaining = this.filter(function(item) { return !excluded.has(item); });
-    var concat = new List(false);
-    concat.addItems(remaining);
-    return concat;
+    return new List(false, remaining);
 };
 
 
@@ -184,5 +185,21 @@ List.prototype.toString = function() {
 };
 
 List.prototype.getText = List.prototype.toString;
+
+(function() {
+    var $isArray = Array.isArray;
+    Array.isArray = function(obj) {
+        return $isArray(obj) || obj instanceof List;
+    }
+    var $concat = Array.prototype.concat;
+    // eslint-disable-next-line
+    Array.prototype.concat = function() {
+        for(var i=0; i<arguments.length; i++) {
+            if(arguments[i] instanceof List)
+                arguments[i] = Array.from(arguments[i]);
+        }
+        return $concat.apply(this, arguments);
+    }
+})();
 
 export default List;
