@@ -1,0 +1,22 @@
+{
+  "type" : "WEBLIBRARY",
+  "name" : "React-Calendar-5",
+  "version" : "1.0.0",
+  "migrateFrom" : "1.0.0",
+  "description" : "React Calendar widget",
+  "htmlEngine" : "react-16",
+  "codeResource" : "widgets.poc",
+  "stubResource" : "stub.js",
+  "styleSheets" : [ "https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css" ],
+  "resources" : [
+      { "url": "main.js.map", "mimeType": "application/octet-stream" }
+  ],
+  "prefix" : "ReactCalendar",
+  "widgets" : [
+
+  ],
+  "renamings": {
+
+  }
+}
+
